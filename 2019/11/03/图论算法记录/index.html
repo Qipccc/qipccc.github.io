@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="算法,数据结构,图论,leetcode," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="主要以有向加权图为主，涉及到 图的几种常见表示方法、拓扑排序、弗洛伊德算法(Floyd)算法、 狄克斯特拉(dijkstra)算法、 SPFA算法、贝尔曼-福特(Bellman-Ford)算法">
+<meta name="keywords" content="算法,数据结构,图论,leetcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图论算法记录">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;03&#x2F;%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95%E8%AE%B0%E5%BD%95&#x2F;index.html">
+<meta property="og:site_name" content="Qipccc Blog">
+<meta property="og:description" content="主要以有向加权图为主，涉及到 图的几种常见表示方法、拓扑排序、弗洛伊德算法(Floyd)算法、 狄克斯特拉(dijkstra)算法、 SPFA算法、贝尔曼-福特(Bellman-Ford)算法">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103151010.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103151027.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103151035.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103151044.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;ca22fa351d5278e95c4c8c94aba6da42ae45d465ff3e8e82149777274293e194-0210.gif">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;Floyd算法.PNG">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.1.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.2.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.3.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.4.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.5.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.6.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.7.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;wiki.jikexueyuan.com&#x2F;project&#x2F;easy-learn-algorithm&#x2F;images&#x2F;7.8.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103124821.png">
+<meta property="og:updated_time" content="2019-11-03T15:25:02.462Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191103151010.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/11/03/图论算法记录/"/>
+
+
+
+
+
+  <title>图论算法记录 | Qipccc Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Qipccc Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/03/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95%E8%AE%B0%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="qipccc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Qipccc Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">图论算法记录</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-03T00:00:00+08:00">
+                2019-11-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" itemprop="url" rel="index">
+                    <span itemprop="name">算法与数据结构</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>主要以有向加权图为主，涉及到 <strong>图的几种常见表示方法</strong>、<strong>拓扑排序</strong>、<strong>弗洛伊德算法(Floyd)算法</strong>、 <strong>狄克斯特拉(dijkstra)算法</strong>、 <strong>SPFA算法</strong>、<strong>贝尔曼-福特(Bellman-Ford)算法</strong></p>
+<a id="more"></a>
+<h2 id="图的常见表示方法"><a href="#图的常见表示方法" class="headerlink" title="图的常见表示方法"></a>图的常见表示方法</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191103151010.png" heigt='400' width='400'/></p>
+<h3 id="1-邻接矩阵："><a href="#1-邻接矩阵：" class="headerlink" title="1. 邻接矩阵："></a>1. 邻接矩阵：</h3><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191103151027.png" heigt='400' width='400'/></p>
+<h3 id="2-邻接表："><a href="#2-邻接表：" class="headerlink" title="2. 邻接表："></a>2. 邻接表：</h3><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191103151035.png" heigt='400' width='400'/></p>
+<h3 id="3-边缘列表"><a href="#3-边缘列表" class="headerlink" title="3. 边缘列表"></a>3. 边缘列表</h3><p>在刷题的时候经常以这种形式给出，可以将其转换乘邻接表或者邻接矩阵</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191103151044.png" heigt='350' width='350'/></p>
+<p><a href="https://blog.csdn.net/woaidapaopao/article/details/51732947" target="_blank" rel="noopener">完整</a></p>
+<h2 id="拓扑排序"><a href="#拓扑排序" class="headerlink" title="拓扑排序"></a>拓扑排序</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/ca22fa351d5278e95c4c8c94aba6da42ae45d465ff3e8e82149777274293e194-0210.gif" alt=""></p>
+<p>其简单思路就是先找到入度为0 的节点，并将该节点放入队列中，同时将与他相邻的节点的入度减一，以此往复，如果最后所有节点的入度都为零则说明可以完成拓扑排序，否则该图不能进行拓扑排序</p>
+<p>具体的算法流程如下：</p>
+<ol>
+<li><p>在算法开始前，扫描对应的存储空间(使用邻接表)，将入度为 0 的节点放入队列中</p>
+</li>
+<li><p>只要队列非空，就从队首取出入度为0 的节点，并且将这个结点的所有邻接结点（它指向的结点）的入度减1，在减 1 以后，如果这个被减 1 的结点的入度为 0 ，就继续入队。</p>
+</li>
+<li><p>队列为空时，检查结果集是否满足要求</p>
+</li>
+</ol>
+<p>除了需要保存入度为0 的队列，还需要两个辅助的数据结构：</p>
+<pre><code>1). 邻接表：通过节点的索引，能够得到这个节点的后继节点；
+
+2). 入度数组：通过节点的索引能够得到指向这个节点的节点个数
+</code></pre><h3 id="leetcode207-课程表"><a href="#leetcode207-课程表" class="headerlink" title="leetcode207 课程表"></a>leetcode207 课程表</h3><ul>
+<li>题目描述：</li>
+</ul>
+<p>现在你总共有 n 门课需要选，记为 0 到 n-1。</p>
+<p>在选修某些课程之前需要一些先修课程。 例如，想要学习课程 0 ，你需要先完成课程 1 ，我们用一个匹配来表示他们: [0,1]</p>
+<p>给定课程总量以及它们的先决条件，判断是否可能完成所有课程的学习？</p>
+<ul>
+<li><p>示例 1:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: 2, [[1,0]] </span><br><span class="line">输出: true</span><br><span class="line">解释: 总共有 2 门课程。学习课程 1 之前，你需要完成课程 0。所以这是可能的。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>示例 2:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: 2, [[1,0],[0,1]]</span><br><span class="line">输出: false</span><br><span class="line">解释: 总共有 2 门课程。学习课程 1 之前，你需要先完成​课程 0；并且学习课程 0 之前，你还应先完成课程 1。这是不可能的。</span><br></pre></td></tr></table></figure>
+<p>来源：力扣（LeetCode）</p>
+</li>
+</ul>
+<p>链接：<a href="https://leetcode-cn.com/problems/course-schedule" target="_blank" rel="noopener">https://leetcode-cn.com/problems/course-schedule</a></p>
+<p>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。</p>
+<ul>
+<li>解题</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">canFinish</span><span class="params">(<span class="keyword">int</span> numCourses, <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; prerequisites)</span> </span>&#123; </span><br><span class="line">    <span class="comment">//输入prerequisites是边缘列表</span></span><br><span class="line">    <span class="keyword">int</span> clen = prerequisites.size(); <span class="comment">//课程的长度</span></span><br><span class="line">    <span class="keyword">if</span> (clen == <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">// 课程长度为零，所以肯定可以学习完</span></span><br><span class="line">    <span class="comment">//1.初始化入度的数组 和 邻接表数组</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; indegree(numCourses); <span class="comment">//入度数组，初始化为0</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; adj(numCourses); <span class="comment">//邻接表数组</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; clen; ++i) &#123;</span><br><span class="line">        indegree[prerequisites[i][<span class="number">0</span>]] += <span class="number">1</span>;  <span class="comment">//统计每个顶点的度</span></span><br><span class="line">        adj[prerequisites[i][<span class="number">1</span>]].push_back(prerequisites[i][<span class="number">0</span>]); <span class="comment">// 创建邻接表</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2. 创建队列，在拓扑排序之前，将所有入度为0的顶点存入队列中</span></span><br><span class="line">    <span class="built_in">queue</span>&lt;<span class="keyword">int</span>&gt; myqueue;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; indegree.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>)</span><br><span class="line">            myqueue.push(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 3. 开始拓扑排序，主要是遍历前面的邻接表，然后找到表中顶点对应的入度，对入度减一操作，若检测到入度为0时则推入队列中，准备输出（删除）</span></span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (!myqueue.empty()) &#123;</span><br><span class="line">        ++count;</span><br><span class="line">        <span class="keyword">int</span> top = myqueue.front(); <span class="comment">// 得到首元素</span></span><br><span class="line">        myqueue.pop();  <span class="comment">//删除首元素</span></span><br><span class="line">        <span class="comment">//vector&lt;int&gt; tmp = adj[top];</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator iter = adj[top].begin(); iter != adj[top].end(); ++iter) &#123;</span><br><span class="line">            --indegree[*iter];</span><br><span class="line">            <span class="keyword">if</span> (indegree[*iter] == <span class="number">0</span>)</span><br><span class="line">                myqueue.push(*iter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> count == numCourses;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="leetcode210-课程表2"><a href="#leetcode210-课程表2" class="headerlink" title="leetcode210 课程表2"></a>leetcode210 课程表2</h3><p>和前面一样不同的是需要把课程表输出</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; findOrder(<span class="keyword">int</span> numCourses, <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; prerequisities) &#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; res;</span><br><span class="line">    <span class="comment">//1. 初始化入度数组和邻接表'</span></span><br><span class="line">    <span class="keyword">if</span> (prerequisities.size() == <span class="number">0</span>) &#123;  <span class="comment">// 如果prerequisities大小为零，没有特别说明课程完成的先后顺序，则所有课程都能完成</span></span><br><span class="line">        <span class="keyword">while</span>(numCourses &gt;<span class="number">0</span>)</span><br><span class="line">            res.push_back(--numCourses);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; indegree(numCourses); <span class="comment">//入度数组</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; adj(numCourses); <span class="comment">//邻接表数组</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; prerequisities.size(); ++i) &#123;</span><br><span class="line">        indegree[prerequisities[i][<span class="number">0</span>]] += <span class="number">1</span>;  <span class="comment">// 入度+1</span></span><br><span class="line">        adj[prerequisities[i][<span class="number">1</span>]].push_back(prerequisities[i][<span class="number">0</span>]); <span class="comment">// 扩展邻接表</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2. 创建队列，将度为0的元素推入队列中</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">queue</span>&lt;<span class="keyword">int</span>&gt; Myqueue;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; indegree.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>)</span><br><span class="line">            Myqueue.push(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//3. 统计每个顶点的度，判断是否为零，减一和push进入队列中</span></span><br><span class="line">    <span class="keyword">while</span> (!Myqueue.empty()) &#123;</span><br><span class="line">        <span class="keyword">int</span> top = Myqueue.front();</span><br><span class="line">        res.push_back(top);</span><br><span class="line">        Myqueue.pop();</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator iter = adj[top].begin(); iter != adj[top].end(); ++iter) &#123;</span><br><span class="line">            --indegree[*iter];</span><br><span class="line">            <span class="keyword">if</span> (indegree[*iter] == <span class="number">0</span>)</span><br><span class="line">                Myqueue.push(*iter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (res.size() != numCourses)</span><br><span class="line">        res = &#123;&#125;;  <span class="comment">// 输出空数组</span></span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="弗洛伊德算法-Floyd"><a href="#弗洛伊德算法-Floyd" class="headerlink" title="弗洛伊德算法(Floyd)"></a>弗洛伊德算法(Floyd)</h2><p>弗洛伊德算法是经典的 <strong>多源最短路径</strong> 算法，可以正确处理有向图或有向图的负权，但不可存在负权回路的最短路径问题，同时也被用于计算有向图的传递闭包。 </p>
+<ul>
+<li>大概思路：</li>
+</ul>
+<p>定义两个二维矩阵D和P， D记录顶点间的最小路径，P记录顶点间最小路径中的中转点<br>通过三重循环，k为中转点，v为起点，w为终点，循环比较D[v][w] 和 D[v][k]+D[k][w]最小值，如果后者更小则替换前者</p>
+<ul>
+<li>具体：</li>
+</ul>
+<p>矩阵 D 记录顶点间的最小路径<br>例如 D[0][3]= 10，说明顶点 0  到  3  的最短路径为 10；<br>矩阵 P 记录顶点间最小路径中的中转点<br>例如 P[0][3]= 1  说明，0  到  3 的最短路径轨迹为：0 -&gt; 1 -&gt; 3。<br>它通过 3 重循环，k 为中转点，v 为起点，w 为终点，循环比较 D[v][w]  和  D[v][k] + D[k][w]最小值，如果 D[v][k] + D[k][w]  为更小值，则把 D[v][k] + D[k][w]  覆盖保存在 D[v][w]中。</p>
+<ul>
+<li>步骤演示：</li>
+</ul>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/Floyd算法.PNG" height='800' width='400'/></p>
+<p><a href="https://www.cnblogs.com/dzzy/p/5097009.html" target="_blank" rel="noopener">图片来源</a></p>
+<h3 id="leetcode743-网络延迟时间"><a href="#leetcode743-网络延迟时间" class="headerlink" title="leetcode743 网络延迟时间"></a>leetcode743 网络延迟时间</h3><p>输入： times[i] = (u,v,w)，分别表示源节点、目标节点、它们之间的传递时间；  N：网络节点的个数， K表示测试时的起始节点<br>范围： N:[1,100], K:[1,N], times:[1,6000], 1 &lt;= u,v&lt;= N ,0 &lt;= w &lt;= 100<br>输出： 如果可以使所有节点都收到信号则返回总的时间，如果不能则返回-1</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">networkDelayTime_Floyd</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; times, <span class="keyword">int</span> N, <span class="keyword">int</span> K)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//创建二维稀疏矩阵表示 ==&gt; 邻接矩阵</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; v(N + <span class="number">1</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;(N + <span class="number">1</span>, <span class="number">-1</span>)); <span class="comment">// 创建二维vector 并初始化为-1表示永远不会到达</span></span><br><span class="line">    <span class="comment">//填充邻接矩阵</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= N; ++i) &#123;</span><br><span class="line">        v[i][i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; times.size(); ++i) &#123;</span><br><span class="line">        v[times[i][<span class="number">0</span>]][times[i][<span class="number">1</span>]] = times[i][<span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//接下来进入Floyd算法的三重循环</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">1</span>; k &lt;= N ; ++k) &#123;  <span class="comment">//这里的小k表示的就是中间节点，尝试使用每个中间节点进行替换</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= N; ++i) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">1</span>; j &lt;= N; ++j) &#123;</span><br><span class="line">                <span class="comment">//当满足下面的条件时，使用中间节点进行替换</span></span><br><span class="line">                <span class="comment">//1. 中间节点不为-1，即i -&gt; k 和 k -&gt; j 这条有向边是存在的</span></span><br><span class="line">                <span class="comment">//2. 在满足条件1 的基础上，经过中间节点花费的时间可以比原来小，或者 原来的有向边不存在</span></span><br><span class="line">                <span class="keyword">if</span> (v[i][k] != <span class="number">-1</span> &amp;&amp; v[k][j] != <span class="number">-1</span> &amp;&amp; (v[i][j] &gt; v[i][k] + v[k][j] || v[i][j] == <span class="number">-1</span>))</span><br><span class="line">                    v[i][j] = v[i][k] + v[k][j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//通过上面的三重循环，就将每个节点之间的最短通路找到了（如果存在的话）</span></span><br><span class="line">    <span class="keyword">int</span> res = <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">//因为最后的结果是要返回从该节点K出发遍历所有节点所花费的时间</span></span><br><span class="line">    <span class="comment">//所以首先判断是否为-1以此判断K是否可以联通所有节点，如果存在存在-1说明此路不通直接返回-1；</span></span><br><span class="line">    <span class="comment">//否则，将最大的那个值输出，因为最大值表示从K出发经过了所有的节点累加得到的路径长度，符合最后的要求</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= N; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (v[K][i] == <span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;  <span class="comment">//说明这个节点是走不通的</span></span><br><span class="line">        res = max(res, v[K][i]); </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="狄克斯特拉算法-Dijkstra"><a href="#狄克斯特拉算法-Dijkstra" class="headerlink" title="狄克斯特拉算法(Dijkstra)"></a>狄克斯特拉算法(Dijkstra)</h2><p>最经典的 <strong>单源最短路径</strong> (一个点到其余各个顶点的最短路径)算法，适用于边权为正的无向和有向图，不适用于有负边权的图.</p>
+<p>基本思想：</p>
+<p>每次找到离源点最近的一个顶点，然后以该顶点为中心进行扩展，最终得到源点到其余所有点的最短路径。</p>
+<p>基本步骤：</p>
+<ol>
+<li><p>将所有顶点分为两部分：已知最短路程的顶点集合P和未知最短路程的顶点集合Q。最开始，已知最短路径的顶点集合P中只有源点一个顶点。这里使用一个book[i]数组来记录哪些点在集合P中。例如对于某个顶点i，如果book[i]=1则表示这个顶点在集合P中，book[i]=0则表示这个顶点在集合Q中；</p>
+</li>
+<li><p>设置源点s到自己的最短路径为0即dis=0。若存在源点能直接到达顶点i，则把dis[i]设为e[s][i]，同时把所有其它（源点不能直接到达的）顶点的最短路径设置为 $ \infty$；</p>
+</li>
+<li><p>在集合Q的所有顶点选择一个离源点s最近的顶点u（即dis[u]最小）加入到集合P。并考察所有以点u为起点的边，对每一条边进行松弛操作。例如存在一条边从 u到v的边，那么可以通过将边 u -&gt; v添加到尾部来拓展一条从s 到v的路径，这条路径的长度是 dis[u]+e[u][v]，如果这个值比目前已知的dis[v]的值要小，可以用这个新值代替dis[v]中的值；</p>
+</li>
+<li><p>重复第三步，如果集合Q为空，算法结束。最终dis 数组中的值就是源点到所有顶点的最短路径。</p>
+</li>
+</ol>
+<ul>
+<li>步骤演示：</li>
+</ul>
+<p>给出下图：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.1.png" alt=""></p>
+<p>创建邻接矩阵：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.2.png" alt=""></p>
+<p>使用一个一维数组dis存储1号顶点到其余各个顶点的初始路程:</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.3.png" alt=""></p>
+<p>找到离1号顶点最近的顶点，首先就是其本身，因为其操作没有特殊性，直接参考后续步骤。然后找到的最近顶点为2，然后查看2号顶点的出边有： 2-&gt;3, 2-&gt;4这两条边。先讨论2-&gt;3这条边能否让1号顶点到3号顶点的路程变短，也就是比较dis[3] 和 dis[2] + e[2][3]的大小，发现 12 &gt; 1+9，所以dis[3]更新为10,同理分析 2-&gt;4这条边， dis[4] = $ \infty$ &gt; dis[2] + e[2][4] = 4 所以dis[4] = 4，dis更新如下：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.4.png" alt=""></p>
+<p>继续在 3,4,5,6顶点中查找离1号顶点最近的点，发现是4号顶点，其出边为 4-&gt;3, 4-&gt;5, 4-&gt;6。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对于4 -&gt;3 ,dis[3] = 10 &gt; dis[4] + e[4][3] = 8,故 dis[3]更新为8;</span><br><span class="line">对于4-&gt;5, dis[5] = inf &gt; dis[4] + e[4][5] = 17, 故 dis[5] = 17;</span><br><span class="line">同理 dis[6] = 19</span><br></pre></td></tr></table></figure><br>所以dis更新如下：<br><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.5.png" alt=""></p>
+<p>继续在3,5,6中查找离1号顶点最近的点，发现是3号顶点，其出边为 3-&gt;5。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3 -&gt; 5， dis[5] = 17 &gt; dis[3] + e[3][5] = 13，故dis[5] = 13</span><br></pre></td></tr></table></figure><br>所以dis更新如下：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.6.png" alt="">（图中6号节点对应的19，背景应该是白色的）</p>
+<p>继续在5,6中查找，最近点为5，其出边为 5-&gt;6：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">5-&gt;6, dis[6] = 19 &gt; dis[5] + e[5][6] = 17，dis[6] = 17</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.7.png" alt=""></p>
+<p>最后对顶点6进行松弛，发现没有出边故不处理，最终dis数组如下，这便是1号顶点到其余各个顶点的最短路径：</p>
+<p><img src="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/7.8.png" alt=""></p>
+<p><a href="http://wiki.jikexueyuan.com/project/easy-learn-algorithm/dijkstra.html" target="_blank" rel="noopener">参考</a></p>
+<h3 id="leetcode743-网络延时时间"><a href="#leetcode743-网络延时时间" class="headerlink" title="leetcode743 网络延时时间"></a>leetcode743 网络延时时间</h3><p>前面使用了Floyd算法求解，这里使用Dijkstra算法求解：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">networkDelayTime_Dijkstra</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; times, <span class="keyword">int</span> N, <span class="keyword">int</span> K)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//创建邻接矩阵</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; v(N + <span class="number">1</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;(N + <span class="number">1</span>, <span class="number">-1</span>)); <span class="comment">//使用-1代替无穷大值，可能会有些许麻烦，之后尝试替换为 MAX_INT</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; times.size(); ++i) &#123;</span><br><span class="line">        v[times[i][<span class="number">0</span>]][times[i][<span class="number">1</span>]] = times[i][<span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; S(N + <span class="number">1</span>, <span class="number">-1</span>), T(N + <span class="number">1</span>, <span class="number">-1</span>); <span class="comment">//S为确定数组，T为估计数组</span></span><br><span class="line">    <span class="comment">//根据单源节点填充数组</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (v[K][i] != <span class="number">-1</span>)</span><br><span class="line">            T[i] = v[K][i];</span><br><span class="line">    &#125;</span><br><span class="line">    T[K] = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">//找到距离单元节点最短距离的节点</span></span><br><span class="line">    <span class="keyword">int</span> minVal = <span class="number">-1</span>,minIndex = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> c = <span class="number">0</span>; c &lt; N; ++c) &#123;</span><br><span class="line">        minVal = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span> (T[i] != <span class="number">-1</span> &amp;&amp; S[i] == <span class="number">-1</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (minVal == <span class="number">-1</span> || T[i] &lt; minVal) &#123;</span><br><span class="line">                    minVal = T[i];</span><br><span class="line">                    minIndex = i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        S[minIndex] = minVal; <span class="comment">// 确定值</span></span><br><span class="line">        <span class="comment">// 以这个节点(minIndex)出发，找到其每个出边，并和原始距离进行比较，更新数组 T(估计数组)</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span> (v[minIndex][i] != <span class="number">-1</span> &amp;&amp; (minVal + v[minIndex][i] &lt; T[i] || T[i] == <span class="number">-1</span>))</span><br><span class="line">                T[i] = minVal + v[minIndex][i]; <span class="comment">// 估计值</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> res = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; S.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (S[i] == <span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        res = max(res, S[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//这里使用-1 代替了 inf ，后续尝试修改成inf</span></span><br></pre></td></tr></table></figure>
+<p><a href="https://leetcode-cn.com/problems/network-delay-time/solution/c-bellman-forddijkstrafloydspfa-by-gez1994/" target="_blank" rel="noopener">解题参考</a></p>
+<h2 id="SPFA算法"><a href="#SPFA算法" class="headerlink" title="SPFA算法"></a>SPFA算法</h2><p>SPFA算法是 <strong>单源最短路径</strong> 算法，是Bellman-ford队列优化，和BFS的关系密切，相较于狄克斯特拉算法，<strong>边的权重可以是负数</strong>、实现简单，但是时间复杂度过高。</p>
+<ul>
+<li>基本思路：</li>
+</ul>
+<p>使用一个先进先出的队列保存待优化的节点，优化时每次取出队首的节点 u ，并且对于 u 的所有出边所指向的节点v进行松弛操作，如果 v 点的最短路径估计值有所调整且v 点不在当前队列中，就将 v 点放入队尾。这样不断从队列中取出节点来进行松弛操作，直至队列为空。</p>
+<ul>
+<li>步骤：</li>
+</ul>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191103124821.png"/></p>
+<h3 id="leetcode743-网络延时时间-1"><a href="#leetcode743-网络延时时间-1" class="headerlink" title="leetcode743 网络延时时间"></a>leetcode743 网络延时时间</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">networdDelay_SPFA</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; times, <span class="keyword">int</span> N, <span class="keyword">int</span> K)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; T(N + <span class="number">1</span>, <span class="number">-1</span>);  <span class="comment">//估计值</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; Flag(N + <span class="number">1</span>, <span class="number">-1</span>);  <span class="comment">// 用来标记节点是否在队列中</span></span><br><span class="line">    <span class="built_in">queue</span>&lt;<span class="keyword">int</span>&gt; Myqueue;  <span class="comment">//队列</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; v(N + <span class="number">1</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;(N + <span class="number">1</span>, <span class="number">-1</span>));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; times.size(); ++i) &#123;</span><br><span class="line">        v[times[i][<span class="number">0</span>]][times[i][<span class="number">1</span>]] = times[i][<span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i)</span><br><span class="line">        v[i][i] = <span class="number">0</span>;</span><br><span class="line">    T[K] = <span class="number">0</span>;</span><br><span class="line">    Myqueue.push(K);  </span><br><span class="line">    Flag[K] = <span class="number">0</span>; <span class="comment">// </span></span><br><span class="line">    <span class="keyword">while</span> (!Myqueue.empty()) &#123;  <span class="comment">//只要队列不为空就一直循环</span></span><br><span class="line">        <span class="keyword">int</span> u = Myqueue.front();</span><br><span class="line">        Myqueue.pop();</span><br><span class="line">        Flag[u] = <span class="number">-1</span>; <span class="comment">//此时tmp 不在队列中</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span> (v[u][i] != <span class="number">-1</span> &amp;&amp;( T[i] &gt; T[u] + v[u][i]  ||  T[i] == <span class="number">-1</span>))&#123;</span><br><span class="line">                T[i] = T[u] + v[u][i];</span><br><span class="line">                <span class="keyword">if</span> (Flag[i] == <span class="number">-1</span>) &#123;<span class="comment">//说明此时这个节点i不在队列中</span></span><br><span class="line">                    Myqueue.push(i);</span><br><span class="line">                    Flag[i] = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> res = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (T[i] == <span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        res = max(res, T[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="贝尔曼-福特算法-Bellman-Ford"><a href="#贝尔曼-福特算法-Bellman-Ford" class="headerlink" title="贝尔曼-福特算法(Bellman-Ford)"></a>贝尔曼-福特算法(Bellman-Ford)</h2><p><a href="https://juejin.im/post/5b77fec1e51d4538cf53be68" target="_blank" rel="noopener">参考</a></p>
+<p>其原理是对图进行最多n-1次松弛操作，得到所有可能的最短路径。其边的权重可以是负数，实现简单但是复杂度过高，复杂度为$O(NE)$ 其中N为顶点个数，E为边数。</p>
+<p>基本思路：</p>
+<ol>
+<li><p>初始化时将起点s 到各顶点v的距离dis(s-&gt;v)赋值为 $\infty$，dis(s-&gt;s)赋值为0；</p>
+</li>
+<li><p>后续进行最多n-1 次遍历，对所有边进行松弛操作；</p>
+</li>
+<li><p>遍历都结束，若再进行一次遍历，还能得到s 到某些节点更短路径的话，就说明存在负环路（负环路会随着遍历次数的增加而不断减小）</p>
+</li>
+</ol>
+<p>思路上与狄克斯特拉算法最大的不同是每次都是从源点s 重新出发进行 “松弛”更新操作，而狄克斯特拉算法则是从源点出发向外扩逐个处理相邻（最近）的节点。</p>
+<h3 id="leetcode743-网络延时时间-2"><a href="#leetcode743-网络延时时间-2" class="headerlink" title="leetcode743 网络延时时间"></a>leetcode743 网络延时时间</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 4. Bellman-Ford算法</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">networdDelay_BellmanFord</span><span class="params">(<span class="built_in">vector</span> &lt; <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;&amp; times, <span class="keyword">int</span> N, <span class="keyword">int</span> K)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; T(N + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">    T[K] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> c = <span class="number">0</span>; c &lt; N - <span class="number">1</span>; ++c) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; times.size(); ++i) &#123;</span><br><span class="line">            <span class="keyword">int</span> src = times[i][<span class="number">0</span>], target = times[i][<span class="number">1</span>], dis = times[i][<span class="number">2</span>];</span><br><span class="line">            <span class="keyword">if</span> (T[src] != <span class="number">-1</span> &amp;&amp; (T[src] + dis &lt; T[target] || T[target] == <span class="number">-1</span>)) &#123;</span><br><span class="line">                T[target] = T[src] + dis;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> res = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N + <span class="number">1</span>; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (T[i] == <span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        res = max(res, T[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          
+            <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag"># 数据结构</a>
+          
+            <a href="/tags/%E5%9B%BE%E8%AE%BA/" rel="tag"># 图论</a>
+          
+            <a href="/tags/leetcode/" rel="tag"># leetcode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80NzM3My8yMzg3Mw=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">qipccc</p>
+              <p class="site-description motion-element" itemprop="description">风雨兼程</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#图的常见表示方法"><span class="nav-number">1.</span> <span class="nav-text">图的常见表示方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-邻接矩阵："><span class="nav-number">1.1.</span> <span class="nav-text">1. 邻接矩阵：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-邻接表："><span class="nav-number">1.2.</span> <span class="nav-text">2. 邻接表：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-边缘列表"><span class="nav-number">1.3.</span> <span class="nav-text">3. 边缘列表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拓扑排序"><span class="nav-number">2.</span> <span class="nav-text">拓扑排序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode207-课程表"><span class="nav-number">2.1.</span> <span class="nav-text">leetcode207 课程表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode210-课程表2"><span class="nav-number">2.2.</span> <span class="nav-text">leetcode210 课程表2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#弗洛伊德算法-Floyd"><span class="nav-number">3.</span> <span class="nav-text">弗洛伊德算法(Floyd)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode743-网络延迟时间"><span class="nav-number">3.1.</span> <span class="nav-text">leetcode743 网络延迟时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#狄克斯特拉算法-Dijkstra"><span class="nav-number">4.</span> <span class="nav-text">狄克斯特拉算法(Dijkstra)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode743-网络延时时间"><span class="nav-number">4.1.</span> <span class="nav-text">leetcode743 网络延时时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPFA算法"><span class="nav-number">5.</span> <span class="nav-text">SPFA算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode743-网络延时时间-1"><span class="nav-number">5.1.</span> <span class="nav-text">leetcode743 网络延时时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝尔曼-福特算法-Bellman-Ford"><span class="nav-number">6.</span> <span class="nav-text">贝尔曼-福特算法(Bellman-Ford)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#leetcode743-网络延时时间-2"><span class="nav-number">6.1.</span> <span class="nav-text">leetcode743 网络延时时间</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qipccc</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
