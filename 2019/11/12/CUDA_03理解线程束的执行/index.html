@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Odyssey" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: true,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="CUDA执行的实质是线程束的执行。">
+<meta name="keywords" content="CUDA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA_03理解线程束的执行">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;12&#x2F;CUDA_03%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%9D%9F%E7%9A%84%E6%89%A7%E8%A1%8C&#x2F;index.html">
+<meta property="og:site_name" content="Odyssey">
+<meta property="og:description" content="CUDA执行的实质是线程束的执行。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112152601.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112162353.png">
+<meta property="og:updated_time" content="2019-11-13T11:52:56.275Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112152601.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/11/12/CUDA_03%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%9D%9F%E7%9A%84%E6%89%A7%E8%A1%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>CUDA_03理解线程束的执行 | Odyssey</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Odyssey</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">qipccc的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/CUDA_03%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%9D%9F%E7%9A%84%E6%89%A7%E8%A1%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="qipccc">
+      <meta itemprop="description" content="风雨兼程">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Odyssey">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA_03理解线程束的执行
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-12 15:07:38" itemprop="dateCreated datePublished" datetime="2019-11-12T15:07:38+08:00">2019-11-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-11-13 19:52:56" itemprop="dateModified" datetime="2019-11-13T19:52:56+08:00">2019-11-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CUDA/" itemprop="url" rel="index">
+                    <span itemprop="name">CUDA</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>CUDA执行的实质是线程束的执行。</p>
+<a id="more"></a>
+<p><a href="https://face2ai.com/cuda-f-3-2-%e7%90%86%e8%a7%a3%e7%ba%bf%e7%a8%8b%e6%9d%9f%e6%89%a7%e8%a1%8c%e7%9a%84%e6%9c%ac%e8%b4%a8-p1/" target="_blank" rel="noopener">来源：理解线程束执行的本质(Part I)</a></p>
+<p>因为硬件根本不知道每个块谁是谁，也不知道先后顺序，硬件(SM)只知道按照机器码跑，而给他什么，先后顺序，这个就是硬件功能设计的直接体现了。<br>从外表来看，CUDA执行所有的线程，并行的，没有先后次序的，但实际上硬件资源是有限的，不可能同时执行百万个线程，所以从硬件角度来看，物理层面上执行的也只是线程的一部分，而每次执行的这一部分，就是我们前面提到的 <strong>线程束</strong> 。</p>
+<h2 id="理解CUDA中的线程束"><a href="#理解CUDA中的线程束" class="headerlink" title="理解CUDA中的线程束"></a>理解CUDA中的线程束</h2><p><a href="https://songpo.wang/" target="_blank" rel="noopener">来源</a></p>
+<p>线程束是SM中基本的执行单元， 每个线程束包含了 32 个线程。所以，当我们定义的一个block中含有的线程数量不是 32 的整数倍时，那么该 block 会被分配给 n+1 个线程束， 其中 n 表示的是 线程数量与32 的整数倍，多出来的线程束会有部分线程不活跃，但因为线程束是基本执行单元，所以这个额外的线程束依旧会消耗和其他线程束相同的资源。</p>
+<blockquote>
+<p>例如： 有一个一维的线程块包含有80个线程，那么映射到 <strong>硬件</strong> 上，系统就会为这个线程块分配 <strong>3个连续</strong> 的线程束，使总共96个硬件线程去支持80个软件线程。其中 <strong>第3个线程束</strong> 中有 <strong>16个线程不活跃</strong>，但是仍然 <strong>消耗</strong> 这系统资源，被浪费掉了。</p>
+</blockquote>
+<p>每个线程束中的线程按照 <strong>单指令多线程</strong> 的方式执行，也就是说同属于一个线程束的线程均会执行 <strong>同一个指令</strong>。</p>
+<h2 id="线程束-warp-和线程块"><a href="#线程束-warp-和线程块" class="headerlink" title="线程束(warp)和线程块"></a>线程束(warp)和线程块</h2><p>执行过程：</p>
+<ol>
+<li><p>一个网格被启动（网格被启动，等价于一个内核被启动，每个内核对应于自己的网格），网格中包含线程块；</p>
+</li>
+<li><p>线程块被分配到某一个SM上；</p>
+</li>
+<li><p>SM上的线程块将分为多个线程束，每个线程束一般是 32 个线程；</p>
+</li>
+<li><p>在一个线程束中，所有线程按照单指令多线程SIMT的方式执行，每一步执行相同的指令，但是处理的数据是私有数据。</p>
+</li>
+</ol>
+<p>下图，对应 <strong>逻辑</strong> 、<strong>实际</strong> 和 <strong>硬件</strong>：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112152601.png"/></p>
+<p>在块中，每个线程有唯一的编号， threadIdx;</p>
+<p>在网格中，每个线程块也有唯一的编号，blockIdx;</p>
+<p>所以每个线程就有在网格中的唯一编号。</p>
+<p>因为线程块是逻辑层，被定义了一个三维结构，而线程束是硬件层，在硬件结构中是一维排列的，所以它们之间的对应关系就是：</p>
+<ol>
+<li>对于一个二维的线程块，映射到一维的物理布局上是：</li>
+</ol>
+<script type="math/tex; mode=display">\text{threadIdx.y} \times \text{blockDim.y} + \text{threadIdx.x}</script><ol>
+<li>对于一个三维的线程块，映射到一维的物理布局上是：</li>
+</ol>
+<script type="math/tex; mode=display">\text{threadIdx.z} \times \text{blockDim.y} \times \text{blockDim.x} + \text{threadIdx.y} \times \text{blockDim.x} + \text{threadIdx.x}</script><h2 id="线程束分化"><a href="#线程束分化" class="headerlink" title="线程束分化"></a>线程束分化</h2><p>线程束是硬件层面的线程集合，线程块是逻辑层面的线程集合。线程束被执行的时候会被分配相同的指令，但是是处理各自私有的数据。如果一个线程束中的不同线程包含不同的控制条件，那么当我们执行到这个控制条件时就会面临不同的选择，同一个线程束中的线程，执行不同的指令就叫做 <strong>线程束的分化。</strong></p>
+<p>GPU相较于CPU不时候大量计算逻辑复杂的任务，因为CPU在进行流水线作业时会采用 <strong>分支预测</strong> 的技术（之前有做个测试，如果对一个很大的随机数组在进行if…else逻辑判断前先进行排序会比未排序直接进行逻辑判断速度慢很多）,而GPU这方面就不擅长。</p>
+<p>为了解决GPU中 <code>线程束中的所有线程执行相同的指令</code> 和 <code>线程束又是分化的</code> 之间的矛盾，只能让那些不成立的指令进行等待。</p>
+<p>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">分水果，你不爱吃，那你就只能看着别人吃，等大家都吃完了，再进行下一轮（也就是下一个指令）</span><br></pre></td></tr></table></figure>
+<p>示意图：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112162353.png"/></p>
+<p>线程束分化会产生严重的性能下降。条件分支越多，并行性削弱越严重。所以应该避免同一个线程束内的线程分化，控制线程块中线程分配到线程束是有规律的而不是随机的。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//低效的分支：</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">mathKernel1</span><span class="params">(<span class="keyword">float</span> *c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> tid = blockIdx.x* blockDim.x + threadIdx.x;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">float</span> a = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">float</span> b = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">if</span> (tid % <span class="number">2</span> == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        a = <span class="number">100.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        b = <span class="number">200.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    c[tid] = a + b;</span><br><span class="line">&#125;<span class="comment">//奇数偶数分化，每次间隔都要分化一次，分化严重</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//调整</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">mathKernel2</span><span class="params">(<span class="keyword">float</span> *c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> tid = blockIdx.x* blockDim.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">float</span> a = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">float</span> b = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((tid/warpSize) % <span class="number">2</span> == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        a = <span class="number">100.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        b = <span class="number">200.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    c[tid] = a + b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//第一个线程束内的线程编号tid从0到31，tid/warpSize都等于0，那么就都执行if语句。</span></span><br><span class="line"><span class="comment">//第二个线程束内的线程编号tid从32到63，tid/warpSize都等于1，执行else线程束内没有分支，效率较高。</span></span><br></pre></td></tr></table></figure>
+<h2 id="延迟隐藏-效率的最大化"><a href="#延迟隐藏-效率的最大化" class="headerlink" title="延迟隐藏-效率的最大化"></a>延迟隐藏-效率的最大化</h2><p>效率的最大化就是要最大化硬件，尤其是计算部分的硬件跑满，都不闲着的情况下利用率是最高的，即最大化功能单元的利用率，而 <strong>利用率</strong> 和 <strong>常驻线程束</strong> 直接相关。硬件中的线程调度器负责线程束的调度，当每时每刻都有可用的线程束供其调度时，这时候可以达到计算资源的完全利用，<strong>依次来保证通过其他常驻线程束来发布其他指令，并可以隐藏每个指令的延迟。</strong></p>
+<p>对于指令的延迟，主要分为两种：</p>
+<ol>
+<li><p>算数指令延迟：从一个算数操作开始，到产生结果之间的时间，这个时间段内只有某些计算单元处于工作状态，而其他逻辑计算单元处于空闲，10 ~ 20 个时钟周期。</p>
+</li>
+<li><p>内存指令延迟： 当产生内存访问的时候，计算单元要等数据从内存拿到寄存器，这个周期是非常长的， 400 ~ 800 个时钟周期。</p>
+</li>
+</ol>
+<p><strong>提高并行的两种方式：</strong></p>
+<ol>
+<li><p>指令集并行（ILP）：一个线程中有很多独立的指令</p>
+</li>
+<li><p>线程级并行（TLP）：很多并发的符合条件的线程</p>
+</li>
+</ol>
+<p>指令隐藏的关键目的是使用全部的计算资源，而内存读取的延迟隐藏是为了使用全部的内存带宽</p>
+<p>内核使用寄存器的数量会影响SM内线程束的数量，<strong>通过调整线程块内线程的多少来提高占用率</strong></p>
+<ul>
+<li><p>小的线程块： 每个线程块中线程太少，会在所有资源没用完就达到了线程束的最大要求；</p>
+</li>
+<li><p>大的线程块： 每个线程块中太多线程，会导致每个SM中每个线程可用的硬件资源较少。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/11/12/CUDA_02%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0/" rel="next" title="CUDA_02执行模型概述">
+                  <i class="fa fa-chevron-left"></i> CUDA_02执行模型概述
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80NzM3My8yMzg3Mw=="></div>
+  </div>
+  
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#理解CUDA中的线程束"><span class="nav-text">理解CUDA中的线程束</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程束-warp-和线程块"><span class="nav-text">线程束(warp)和线程块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程束分化"><span class="nav-text">线程束分化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#延迟隐藏-效率的最大化"><span class="nav-text">延迟隐藏-效率的最大化</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="qipccc"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">qipccc</p>
+  <div class="site-description" itemprop="description">风雨兼程</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qipccc</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">44k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:13</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<script type="text/x-mathjax-config">
+    MathJax.Ajax.config.path['mhchem'] = '//cdn.jsdelivr.net/npm/mathjax-mhchem@3';
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        extensions: ['[mhchem]/mhchem.js'],
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+
+  
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</body>
+</html>

@@ -1,8 +1,349 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>CUDA组织并行线程</title>
-    <url>/2019/11/09/CUDA%E7%BB%84%E7%BB%87%E5%B9%B6%E8%A1%8C%E7%BA%BF%E7%A8%8B/</url>
+    <title>CUDA_03理解线程束的执行</title>
+    <url>/2019/11/12/CUDA_03%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%9D%9F%E7%9A%84%E6%89%A7%E8%A1%8C/</url>
+    <content><![CDATA[<p>CUDA执行的实质是线程束的执行。</p>
+<a id="more"></a>
+<p><a href="https://face2ai.com/cuda-f-3-2-%e7%90%86%e8%a7%a3%e7%ba%bf%e7%a8%8b%e6%9d%9f%e6%89%a7%e8%a1%8c%e7%9a%84%e6%9c%ac%e8%b4%a8-p1/" target="_blank" rel="noopener">来源：理解线程束执行的本质(Part I)</a></p>
+<p>因为硬件根本不知道每个块谁是谁，也不知道先后顺序，硬件(SM)只知道按照机器码跑，而给他什么，先后顺序，这个就是硬件功能设计的直接体现了。<br>从外表来看，CUDA执行所有的线程，并行的，没有先后次序的，但实际上硬件资源是有限的，不可能同时执行百万个线程，所以从硬件角度来看，物理层面上执行的也只是线程的一部分，而每次执行的这一部分，就是我们前面提到的 <strong>线程束</strong> 。</p>
+<h2 id="理解CUDA中的线程束"><a href="#理解CUDA中的线程束" class="headerlink" title="理解CUDA中的线程束"></a>理解CUDA中的线程束</h2><p><a href="https://songpo.wang/" target="_blank" rel="noopener">来源</a></p>
+<p>线程束是SM中基本的执行单元， 每个线程束包含了 32 个线程。所以，当我们定义的一个block中含有的线程数量不是 32 的整数倍时，那么该 block 会被分配给 n+1 个线程束， 其中 n 表示的是 线程数量与32 的整数倍，多出来的线程束会有部分线程不活跃，但因为线程束是基本执行单元，所以这个额外的线程束依旧会消耗和其他线程束相同的资源。</p>
+<blockquote>
+<p>例如： 有一个一维的线程块包含有80个线程，那么映射到 <strong>硬件</strong> 上，系统就会为这个线程块分配 <strong>3个连续</strong> 的线程束，使总共96个硬件线程去支持80个软件线程。其中 <strong>第3个线程束</strong> 中有 <strong>16个线程不活跃</strong>，但是仍然 <strong>消耗</strong> 这系统资源，被浪费掉了。</p>
+</blockquote>
+<p>每个线程束中的线程按照 <strong>单指令多线程</strong> 的方式执行，也就是说同属于一个线程束的线程均会执行 <strong>同一个指令</strong>。</p>
+<h2 id="线程束-warp-和线程块"><a href="#线程束-warp-和线程块" class="headerlink" title="线程束(warp)和线程块"></a>线程束(warp)和线程块</h2><p>执行过程：</p>
+<ol>
+<li><p>一个网格被启动（网格被启动，等价于一个内核被启动，每个内核对应于自己的网格），网格中包含线程块；</p>
+</li>
+<li><p>线程块被分配到某一个SM上；</p>
+</li>
+<li><p>SM上的线程块将分为多个线程束，每个线程束一般是 32 个线程；</p>
+</li>
+<li><p>在一个线程束中，所有线程按照单指令多线程SIMT的方式执行，每一步执行相同的指令，但是处理的数据是私有数据。</p>
+</li>
+</ol>
+<p>下图，对应 <strong>逻辑</strong> 、<strong>实际</strong> 和 <strong>硬件</strong>：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112152601.png"/></p>
+<p>在块中，每个线程有唯一的编号， threadIdx;</p>
+<p>在网格中，每个线程块也有唯一的编号，blockIdx;</p>
+<p>所以每个线程就有在网格中的唯一编号。</p>
+<p>因为线程块是逻辑层，被定义了一个三维结构，而线程束是硬件层，在硬件结构中是一维排列的，所以它们之间的对应关系就是：</p>
+<ol>
+<li>对于一个二维的线程块，映射到一维的物理布局上是：</li>
+</ol>
+<script type="math/tex; mode=display">\text{threadIdx.y} \times \text{blockDim.y} + \text{threadIdx.x}</script><ol>
+<li>对于一个三维的线程块，映射到一维的物理布局上是：</li>
+</ol>
+<script type="math/tex; mode=display">\text{threadIdx.z} \times \text{blockDim.y} \times \text{blockDim.x} + \text{threadIdx.y} \times \text{blockDim.x} + \text{threadIdx.x}</script><h2 id="线程束分化"><a href="#线程束分化" class="headerlink" title="线程束分化"></a>线程束分化</h2><p>线程束是硬件层面的线程集合，线程块是逻辑层面的线程集合。线程束被执行的时候会被分配相同的指令，但是是处理各自私有的数据。如果一个线程束中的不同线程包含不同的控制条件，那么当我们执行到这个控制条件时就会面临不同的选择，同一个线程束中的线程，执行不同的指令就叫做 <strong>线程束的分化。</strong></p>
+<p>GPU相较于CPU不时候大量计算逻辑复杂的任务，因为CPU在进行流水线作业时会采用 <strong>分支预测</strong> 的技术（之前有做个测试，如果对一个很大的随机数组在进行if…else逻辑判断前先进行排序会比未排序直接进行逻辑判断速度慢很多）,而GPU这方面就不擅长。</p>
+<p>为了解决GPU中 <code>线程束中的所有线程执行相同的指令</code> 和 <code>线程束又是分化的</code> 之间的矛盾，只能让那些不成立的指令进行等待。</p>
+<p>例如：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">分水果，你不爱吃，那你就只能看着别人吃，等大家都吃完了，再进行下一轮（也就是下一个指令）</span><br></pre></td></tr></table></figure>
+<p>示意图：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112162353.png"/></p>
+<p>线程束分化会产生严重的性能下降。条件分支越多，并行性削弱越严重。所以应该避免同一个线程束内的线程分化，控制线程块中线程分配到线程束是有规律的而不是随机的。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">//低效的分支：</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">mathKernel1</span><span class="params">(<span class="keyword">float</span> *c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> tid = blockIdx.x* blockDim.x + threadIdx.x;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">float</span> a = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">float</span> b = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">if</span> (tid % <span class="number">2</span> == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        a = <span class="number">100.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        b = <span class="number">200.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    c[tid] = a + b;</span><br><span class="line">&#125;<span class="comment">//奇数偶数分化，每次间隔都要分化一次，分化严重</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//调整</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">mathKernel2</span><span class="params">(<span class="keyword">float</span> *c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> tid = blockIdx.x* blockDim.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">float</span> a = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">float</span> b = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((tid/warpSize) % <span class="number">2</span> == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        a = <span class="number">100.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        b = <span class="number">200.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    c[tid] = a + b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//第一个线程束内的线程编号tid从0到31，tid/warpSize都等于0，那么就都执行if语句。</span></span><br><span class="line"><span class="comment">//第二个线程束内的线程编号tid从32到63，tid/warpSize都等于1，执行else线程束内没有分支，效率较高。</span></span><br></pre></td></tr></table></figure>
+<h2 id="延迟隐藏-效率的最大化"><a href="#延迟隐藏-效率的最大化" class="headerlink" title="延迟隐藏-效率的最大化"></a>延迟隐藏-效率的最大化</h2><p>效率的最大化就是要最大化硬件，尤其是计算部分的硬件跑满，都不闲着的情况下利用率是最高的，即最大化功能单元的利用率，而 <strong>利用率</strong> 和 <strong>常驻线程束</strong> 直接相关。硬件中的线程调度器负责线程束的调度，当每时每刻都有可用的线程束供其调度时，这时候可以达到计算资源的完全利用，<strong>依次来保证通过其他常驻线程束来发布其他指令，并可以隐藏每个指令的延迟。</strong></p>
+<p>对于指令的延迟，主要分为两种：</p>
+<ol>
+<li><p>算数指令延迟：从一个算数操作开始，到产生结果之间的时间，这个时间段内只有某些计算单元处于工作状态，而其他逻辑计算单元处于空闲，10 ~ 20 个时钟周期。</p>
+</li>
+<li><p>内存指令延迟： 当产生内存访问的时候，计算单元要等数据从内存拿到寄存器，这个周期是非常长的， 400 ~ 800 个时钟周期。</p>
+</li>
+</ol>
+<p><strong>提高并行的两种方式：</strong></p>
+<ol>
+<li><p>指令集并行（ILP）：一个线程中有很多独立的指令</p>
+</li>
+<li><p>线程级并行（TLP）：很多并发的符合条件的线程</p>
+</li>
+</ol>
+<p>指令隐藏的关键目的是使用全部的计算资源，而内存读取的延迟隐藏是为了使用全部的内存带宽</p>
+<p>内核使用寄存器的数量会影响SM内线程束的数量，<strong>通过调整线程块内线程的多少来提高占用率</strong></p>
+<ul>
+<li><p>小的线程块： 每个线程块中线程太少，会在所有资源没用完就达到了线程束的最大要求；</p>
+</li>
+<li><p>大的线程块： 每个线程块中太多线程，会导致每个SM中每个线程可用的硬件资源较少。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>CUDA</category>
+      </categories>
+      <tags>
+        <tag>CUDA</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CUDA_02执行模型概述</title>
+    <url>/2019/11/12/CUDA_02%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0/</url>
+    <content><![CDATA[<p>GPU架构学习</p>
+<a id="more"></a>
+<p><a href="https://face2ai.com/cuda-f-3-1-cuda%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9e%8b%e6%a6%82%e8%bf%b0/" target="_blank" rel="noopener">参考1: CUDA执行模型概述</a></p>
+<p><a href="https://www.cnblogs.com/timlly/p/11471507.html#%E5%9B%9Bgpu%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6" target="_blank" rel="noopener">参考2: 深入GPU硬件架构及运行机制</a></p>
+<h2 id="CUDA-编程模型和硬件模型对应"><a href="#CUDA-编程模型和硬件模型对应" class="headerlink" title="CUDA 编程模型和硬件模型对应"></a>CUDA 编程模型和硬件模型对应</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112104551.png"/></p>
+<p>线程块中通过共享内存和寄存器相互通信协调，寄存器和共享内存的分配可以严重影响性能。</p>
+<p>因为SM有限，虽然在编程模型看所有线程都是并行执行，但是在微观上看，所有线程也是分批次在物理层面的机器上执行，线程块(block)里不同的线程可能进度都不一样，但是同一个线程束的线程拥有相同的进度。</p>
+<p>并行就会引起竞争，多线程以未定义的顺序访问同一个数据，就导致了不可预测的行为，CUDA只提供了一种块内（块内线程间）同步的方式，块之间没办法同步！</p>
+<p>同一个SM上可以有不止一个常驻的线程束，有些在执行，有些在等待，他们之间状态的转换是不需要开销的。<strong>每个SM</strong> 都将 <strong>分配给它的线程块</strong> 划分到包含32个线程（我的理解，这32 个线程就是对应到SM硬件图中的core）的线程束中，然后在可用的硬件资源上调度执行。</p>
+<h2 id="Nvidia-Fermi架构"><a href="#Nvidia-Fermi架构" class="headerlink" title="Nvidia Fermi架构"></a>Nvidia Fermi架构</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/7FF8E397A2433A1D7678F72C97558C6A.jpg"/></p>
+<p>解释：</p>
+<ul>
+<li><p>Fermi架构</p>
+<ol>
+<li><p><strong>L2 Cache:</strong>  768 KB 的二级缓存，被所有SM共享；</p>
+</li>
+<li><p><strong>DRAM:</strong> 6 个 384-bits 的GDRR5内存接口；</p>
+</li>
+<li><p><strong>GigaThread引擎：</strong> 全局调度器，分配线程块到SM线程束调度器上；</p>
+</li>
+<li><p><strong>SM(流多处理器器Stream Multiprocessor):</strong> 16个SM，每个SM支持数百个线程并发执行，当一个核函数的网格被启动的时候，多个block会被同时分配给可用的SM上执行。</p>
+</li>
+</ol>
+</li>
+<li><p>SM</p>
+<ol>
+<li><p><strong>2 个 Warp(线程束):</strong> 采用单指令多线程 SIMT 架构管理执行线程，每个线程束中包括 16个Core， Warp编排器（Warp Scheduler），分发单元（Dispatch Unit）；</p>
+</li>
+<li><p><strong>Warp编排器(Warp Scheduler)</strong>， 线程束调度器，</p>
+</li>
+<li><p><strong>分发单元(Dispatch Unit)</strong>， 指令调度（分配）单元，存储两个线程束要执行的命令，</p>
+</li>
+<li><p><strong>寄存器文件(Register File)</strong></p>
+</li>
+<li><p><strong>16组加载存储单元（LD/ST）</strong></p>
+</li>
+<li><p><strong>4 个特殊函数单元（SFU）</strong> 执行固有指令，如正弦、余弦、平方根和差值</p>
+</li>
+<li><p><strong>共享内存/一级缓存</strong></p>
+</li>
+<li><p><strong>CUDA核心</strong></p>
+</li>
+</ol>
+</li>
+<li><p>CUDA核心</p>
+<ol>
+<li><p><strong>一个 FP Unit:</strong> 浮点数运算单元FPU；</p>
+</li>
+<li><p><strong>一个 INT Unit:</strong> 全流水线的整数算数逻辑单元 ALU；</p>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>SM 的中文对照：</strong></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191113095019.png" width="400"/></p>
+<h2 id="Kepler-架构"><a href="#Kepler-架构" class="headerlink" title="Kepler 架构"></a>Kepler 架构</h2><p>是Fermi的后代</p>
+<pre><code>- 强化了SM
+
+- 动态并行
+
+- Hyper-Q 技术
+</code></pre><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112145014.png"/></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112145117.png"/></p>
+<p>SMX是改进的架构，支持动态创建渲染线程，以降低延迟。</p>
+<p>Hyper-Q技术主要是CPU和GPU之间的同步硬件连接，以确保CPU在GPU执行的同事做更多的工作。Fermi架构下CPU控制GPU只有一个队列，Kepler架构下可以通过Hyper-Q技术实现多个队列：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112150046.png"/></p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>想要优化速度，先要学好使用使用性能优化工具：</p>
+<ul>
+<li><p>nvvp</p>
+</li>
+<li><p>nvprof</p>
+</li>
+</ul>
+<p>限制内核性能的主要包括但不限于y一下因素：</p>
+<ul>
+<li><p>存储宽带</p>
+</li>
+<li><p>计算资源</p>
+</li>
+<li><p>指令和内存延迟</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>CUDA</category>
+      </categories>
+      <tags>
+        <tag>CUDA</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Boost编译与配置</title>
+    <url>/2019/11/11/Boost%E7%BC%96%E8%AF%91%E4%B8%8E%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<p>Boost的下载安装与编译配置</p>
+<a id="more"></a>
+<p>配置boost时出现缺少“*.lib”文件解决（主要是Boost的安装和编译）</p>
+<p><a href="https://www.cnblogs.com/bluedoctor/p/6236905.html" target="_blank" rel="noopener">参考</a></p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><ol>
+<li>从<a href="https://www.boost.org/users/download/" target="_blank" rel="noopener">官网</a>下载原始文件:</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105000.png"/></p>
+<p>这里选择红色框中的文件进行下载</p>
+<h2 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h2><ol>
+<li>之后将文件解压，放到任意目录，这里将文件放在C盘根目录下：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105202.png"/></p>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><ol>
+<li>进入文件夹，先运行<code>bootstrap.bat</code></li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105340.png"/></p>
+<p>运行结束后会生成 <code>b2.exe</code>可执行文件。</p>
+<ol>
+<li>结束之后开始菜单找到 <code>Visual Studio 2015</code>文件夹，运行目录下面的 <code>VS2015 X86 本机工具命令提示符</code>：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105440.png" height="300"/></p>
+<ol>
+<li>在命令窗口中定位到刚才解压的<code>boost</code>文件夹下，运行如下命令：</li>
+</ol>
+<p><code>b2 -j4 --debug-symbols=on --build-type=complete toolset=msvc-14.0 threading=multi runtime-link=shared address-model=32</code></p>
+<p>需要等待一段时间，即可生成动态链接库</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><ol>
+<li>在VS2015中进行配置</li>
+</ol>
+<p>在项目属性中进行设置，右键<code>项目</code>—&gt;<code>属性</code>—&gt;<code>配置属性</code></p>
+<p>a. <code>VC++目录</code>—&gt;<code>库目录</code> —&gt; 添加路径：<code>C:\boost_1_71_0\stage\lib</code></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111110710.png"/></p>
+<p>之前就是这里没有添加动态链接库所以发生了如下报错：</p>
+<p><code>LNK1104    无法打开文件 libboost_thread-vc140-mt-gd-x32-1_71.lib</code></p>
+<p>b. <code>C/C++</code> —&gt; <code>常规</code> —&gt; <code>附加包含目录</code>  —&gt; 添加路径： <code>C:\boost_1_71_0</code></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111110923.png"/></p>
+<blockquote>
+<p>注意： 一定要在项目中添加了 <code>C++</code> 文件之后，项目属性设置中才会出现 <code>C/C++</code>的选项。</p>
+</blockquote>
+<p>接下来程序就可以正常运行了。</p>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>对比程序：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/thread.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(<span class="keyword">int</span> seconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	boost::this_thread::sleep(boost::posix_time::seconds(seconds));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">threadFun</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i)</span><br><span class="line">	&#123;</span><br><span class="line">		wait(<span class="number">1</span>);</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	boost::<span class="function">thread <span class="title">t</span><span class="params">(threadFun)</span></span>;  <span class="comment">// 上面的那个函数</span></span><br><span class="line">	t.join();  <span class="comment">// join() 方法是一个阻塞调用：它可以暂停当前线程，直到调用 join() 的线程运行结束。</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>cpp</category>
+      </categories>
+      <tags>
+        <tag>cpp</tag>
+        <tag>Boost</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>20191109记录</title>
+    <url>/2019/11/09/20191109%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>C++句柄、const、Boost配置、复制构造函数、列表初始化</p>
+<a id="more"></a>
+<h2 id="C-句柄类"><a href="#C-句柄类" class="headerlink" title="C++ 句柄类"></a>C++ 句柄类</h2><p>在容器中保存有继承关系的对象时，如果定义成保存基类对象，则派生类将被切割，如果定义成保存派生类对象，则保存基类对象又成问题（基类对象将被强制转换成派生类对象，而派生类中定义的成员未被初始化）</p>
+<blockquote>
+<p>注：  上面这句话还是存在疑问，关键在于容器是如何保存对象的？对基类和派生类的影<br>响具体又是什么？</p>
+</blockquote>
+<p><strong>所以唯一可行的选择是容器中保存对象的指针，但是需要用户管理对象和指针。C++中一个通用的技术是包装类（cover）和句柄类(handle)，使用句柄类存储和管理类指针。</strong></p>
+<p>句柄类大体上完成两方面的工作：</p>
+<ol>
+<li><p>管理指针，这与智能指针的功能类似。</p>
+</li>
+<li><p>实现多态，利用动态绑定，使得指针既可以指向基类，也可以指向派生类。</p>
+</li>
+</ol>
+<blockquote>
+<p>具体的实现呢？稍后补上</p>
+</blockquote>
+<p><a href="https://www.cnblogs.com/zhoudayang/p/5536630.html" target="_blank" rel="noopener">参考</a></p>
+<h2 id="C-构拷贝（复制）造函数"><a href="#C-构拷贝（复制）造函数" class="headerlink" title="C++构拷贝（复制）造函数"></a>C++构拷贝（复制）造函数</h2><p>声明一个类时拷贝构造函数似乎很常见，但总是不太清楚其作用是什么？为什么需要拷贝构造函数？什么情况下需要使用？</p>
+<p><a href="https://www.runoob.com/cplusplus/cpp-copy-constructor.html" target="_blank" rel="noopener">参考</a></p>
+<p><strong>拷贝构造函数</strong> 是一种特殊的构造函数，它在创建对象时，是使用同一类中之前创建的对象来初始化新创建的对象，通常用于：</p>
+<ul>
+<li><p>通过使用另一个同类型的对象来初始化新创建的对象；</p>
+</li>
+<li><p>复制对象把它作为参数传递给函数（以值传递的方式传入函数参数）；</p>
+</li>
+<li><p>复制对象，并从函数返回这个对象。  </p>
+</li>
+</ul>
+<p>拷贝构造函数接受一个以引用方式传入的当前类的对象作为参数，这个参数是源对象的别名。</p>
+<p>如果在类中没有定义拷贝构造函数，编译器会自行定义一个。如果 <strong>类带有指针变量，并有动态内存分配，</strong> 则它 <strong>必须</strong> 有一个拷贝构造函数。</p>
+<p>常见形式：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">classname (<span class="keyword">const</span> classname &amp;obj)&#123;</span><br><span class="line">    <span class="comment">//构造函数的主体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面看一个例子，对比有复制构造函数和没有复制构造函数：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Line</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="comment">//成员函数声明</span></span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">getLength</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">	Line(<span class="keyword">int</span> len); <span class="comment">//简单的构造函数</span></span><br><span class="line">	<span class="comment">//Line(const Line &amp;obj); // 拷贝构造函数</span></span><br><span class="line">	~Line(); <span class="comment">// 析构函数</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">int</span> *ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//成员函数定义，包括构造函数</span></span><br><span class="line">Line::Line(<span class="keyword">int</span> len) &#123;  <span class="comment">//构造函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"调用构造函数"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="comment">//为指针分配内存</span></span><br><span class="line">	ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">	*ptr = len;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Line::Line(const Line &amp;obj) &#123;  // 拷贝构造函数</span></span><br><span class="line"><span class="comment">//	cout &lt;&lt; "调用拷贝构造函数并为指针 ptr 分配内存" &lt;&lt; endl;</span></span><br><span class="line"><span class="comment">//	ptr = new int;</span></span><br><span class="line"><span class="comment">//	*ptr = *obj.ptr;  //拷贝值</span></span><br><span class="line"><span class="comment">//	</span></span><br><span class="line"><span class="comment">//&#125;</span></span><br><span class="line"></span><br><span class="line">Line::~Line(<span class="keyword">void</span>) &#123; <span class="comment">// 析构函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"释放内存"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">delete</span> ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> Line::getLength(<span class="keyword">void</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> *ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">(Line obj)</span> </span>&#123; <span class="comment">//注意这里对象是以值传递的方式传入函数参数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Line 大小： "</span> &lt;&lt; obj.getLength() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="function">Line <span class="title">line</span><span class="params">(<span class="number">10</span>)</span></span>;</span><br><span class="line">	display(line);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先会有一个输出结果：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191110131651.png" width="150"/></p>
+<p>可以看到函数尝试调用两次析构函数以释放内存，但是当调用第二次析构函数时出现下面的情况：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191110131919.png" width="300" /></p>
+<p>最终导致程序报错，其原因主要由下图所示：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/FFA170BA5807AF4BE58389AE931B1A71.jpg"/></p>
+<p>line作为变量传入到函数 display 中时，因为是浅拷贝所以 display 函数中的形参 obj 和 line 指向了相同的内存空间，而函数中的 obj 在执行完成后释放了形参指向的内存空间，但因为 line 和 obj指向相同内存，所以当程序结束尝试释放 line 指向的内存空间时发现并没有内存可以释放，这就导致了程序的错误，所以解决的办法就是使用拷贝构造函数：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">classname (<span class="keyword">const</span> classname &amp;obj)&#123;</span><br><span class="line">    <span class="comment">//构造函数的主体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面看一个例子，对比有复制构造函数和没有复制构造函数：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Line</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="comment">//成员函数声明</span></span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">getLength</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">	Line(<span class="keyword">int</span> len); <span class="comment">//简单的构造函数</span></span><br><span class="line">	Line(<span class="keyword">const</span> Line &amp;obj); <span class="comment">// 拷贝构造函数</span></span><br><span class="line">	~Line(); <span class="comment">// 析构函数</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">int</span> *ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//成员函数定义，包括构造函数</span></span><br><span class="line">Line::Line(<span class="keyword">int</span> len) &#123;  <span class="comment">//构造函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"调用构造函数"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="comment">//为指针分配内存</span></span><br><span class="line">	ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">	*ptr = len;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Line::Line(<span class="keyword">const</span> Line &amp;obj) &#123;  <span class="comment">// 拷贝构造函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"调用拷贝构造函数并为指针 ptr 分配内存"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">	*ptr = *obj.ptr;  <span class="comment">//拷贝值</span></span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Line::~Line(<span class="keyword">void</span>) &#123; <span class="comment">// 析构函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"释放内存"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">delete</span> ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> Line::getLength(<span class="keyword">void</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> *ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">(Line obj)</span> </span>&#123;  <span class="comment">//注意这里对象是以值传递的方式传入函数参数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Line 大小： "</span> &lt;&lt; obj.getLength() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="function">Line <span class="title">line</span><span class="params">(<span class="number">10</span>)</span></span>;</span><br><span class="line">	display(line);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序输出：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">调用构造函数</span><br><span class="line">调用拷贝构造函数并为指针 ptr 分配内存</span><br><span class="line">line 大小 : 10</span><br><span class="line">释放内存</span><br><span class="line">释放内存</span><br></pre></td></tr></table></figure>
+<p>可以看到成功调用了两次析构函数，一次是obj在 display中进行调用的， 另一次是程序结束 line 进行调用的，没有发生错误，安全退出，其结构如下：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/922622A538313F7B71563DBC99E76FCF.jpg"/></p>
+<p>下面还有一个例子，看一下什么时候程序会调用拷贝构造函数：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Line</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">getLength</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">	Line(<span class="keyword">int</span> len);             <span class="comment">// 简单的构造函数</span></span><br><span class="line">	Line(<span class="keyword">const</span> Line &amp;obj);      <span class="comment">// 拷贝构造函数</span></span><br><span class="line">	~Line();                     <span class="comment">// 析构函数</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">int</span> *ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 成员函数定义，包括构造函数</span></span><br><span class="line">Line::Line(<span class="keyword">int</span> len)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"调用构造函数"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="comment">// 为指针分配内存</span></span><br><span class="line">	ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">	*ptr = len;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Line::Line(<span class="keyword">const</span> Line &amp;obj)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"调用拷贝构造函数并为指针 ptr 分配内存"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">	*ptr = *obj.ptr; <span class="comment">// 拷贝值</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Line::~Line(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"释放内存"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">delete</span> ptr;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">int</span> Line::getLength(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> *ptr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">(Line obj)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"line 大小 : "</span> &lt;&lt; obj.getLength() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 程序的主函数</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="function">Line <span class="title">line1</span><span class="params">(<span class="number">10</span>)</span></span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"=========================="</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	Line line2 = line1; <span class="comment">// 这里也调用了拷贝构造函数</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"=========================="</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	display(line1);</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"=========================="</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	display(line2);</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"=========================="</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后输出：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191110141851.png" width="300"/></p>
+<p>在对象进行复制时因为存在拷贝复制函数，所以发生了深层拷贝，最后在析构时依次析构 line1 和 line2。</p>
+<h2 id="c-函数前面和后面-使用const-的作用："><a href="#c-函数前面和后面-使用const-的作用：" class="headerlink" title="c++ 函数前面和后面 使用const 的作用："></a>c++ 函数前面和后面 使用const 的作用：</h2><p><a href="https://blog.csdn.net/smf0504/article/details/52311207" target="_blank" rel="noopener">参考</a></p>
+<p>前面使用const 表示返回值为const</p>
+<p>后面加 const表示函数不可以修改class的成员</p>
+<p>对应下面的：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">const</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getValue2</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br></pre></td></tr></table></figure>
+<p>例子：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FunctionConst</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> value;</span><br><span class="line">    FunctionConst();</span><br><span class="line">    <span class="keyword">virtual</span> ~FunctionConst();</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getValue2</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">FunctionConst::FunctionConst():value(<span class="number">100</span>) &#123;</span><br><span class="line">    <span class="comment">// TODO Auto-generated constructor stub</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">FunctionConst::~FunctionConst() &#123;</span><br><span class="line">    <span class="comment">// TODO Auto-generated destructor stub</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> FunctionConst::getValue()&#123;</span><br><span class="line">    <span class="keyword">return</span> value;<span class="comment">//返回值是 const, 返回值是指针时，防止函数调用表达式作为左值，使得指针的内容被修改</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> FunctionConst::getValue2() <span class="keyword">const</span>&#123;</span><br><span class="line">    <span class="comment">//此函数不能修改class FunctionConst的成员变量 value</span></span><br><span class="line">    value = <span class="number">15</span>;<span class="comment">//错误的, 因为函数后面加 const</span></span><br><span class="line">    <span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="C-赋值初始化和列表初始化"><a href="#C-赋值初始化和列表初始化" class="headerlink" title="C++ 赋值初始化和列表初始化"></a>C++ 赋值初始化和列表初始化</h2><p>类的构造函数在初始化成员变量时，主要有两种方式：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 方式一</span></span><br><span class="line">CSomeClass::CSomeClass() </span><br><span class="line">&#123; </span><br><span class="line">   x=<span class="number">0</span>; </span><br><span class="line">   y=<span class="number">1</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式二</span></span><br><span class="line"></span><br><span class="line">CSomeClass::CSomeClass() : x(<span class="number">0</span>), y(<span class="number">1</span>) </span><br><span class="line">&#123; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方式一我们可以称为赋值初始化，通过在函数体内进行赋值初始化，在所有数据成员被 <strong>分配内存空间后才进行的。</strong></p>
+<p>方式二我们称为列表初始化，在冒号后使用初始化列表进行初始化，<strong>给数据成员分配内存空间时就进行初始化</strong></p>
+<p><a href="https://blog.csdn.net/fengxinlinux/article/details/70146347" target="_blank" rel="noopener">具体</a></p>
+<h2 id="配置boost时出现缺少“-lib”文件解决（主要是Boost的安装和编译）"><a href="#配置boost时出现缺少“-lib”文件解决（主要是Boost的安装和编译）" class="headerlink" title="配置boost时出现缺少“*.lib”文件解决（主要是Boost的安装和编译）"></a>配置boost时出现缺少“*.lib”文件解决（主要是Boost的安装和编译）</h2><p><a href="https://www.cnblogs.com/bluedoctor/p/6236905.html" target="_blank" rel="noopener">参考</a></p>
+<p>主要纪录Boost的正确安装</p>
+<ol>
+<li>从<a href="https://www.boost.org/users/download/" target="_blank" rel="noopener">官网</a>下载原始文件:</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105000.png"/></p>
+<p>这里选择红色框中的文件进行下载</p>
+<ol>
+<li>之后将文件解压，放到任意目录，这里将文件放在C盘根目录下：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105202.png"/></p>
+<ol>
+<li>进入文件夹，先运行<code>bootstrap.bat</code></li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105340.png"/></p>
+<p>运行结束后会生成 <code>b2.exe</code>可执行文件。</p>
+<ol>
+<li>结束之后开始菜单找到 <code>Visual Studio 2015</code>文件夹，运行目录下面的 <code>VS2015 X86 本机工具命令提示符</code>：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111105440.png" height="300"/></p>
+<ol>
+<li>在命令窗口中定位到刚才解压的<code>boost</code>文件夹下，运行如下命令：</li>
+</ol>
+<p><code>b2 -j4 --debug-symbols=on --build-type=complete toolset=msvc-14.0 threading=multi runtime-link=shared address-model=32</code></p>
+<p>需要等待一段时间，即可生成动态链接库</p>
+<ol>
+<li>在VS2015中进行配置</li>
+</ol>
+<p>在项目属性中进行设置，右键<code>项目</code>—&gt;<code>属性</code>—&gt;<code>配置属性</code></p>
+<p>a. <code>VC++目录</code>—&gt;<code>库目录</code> —&gt; 添加路径：<code>C:\boost_1_71_0\stage\lib</code></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111110710.png"/></p>
+<p>之前就是这里没有添加动态链接库所以发生了如下报错：</p>
+<p><code>LNK1104    无法打开文件 libboost_thread-vc140-mt-gd-x32-1_71.lib</code> </p>
+<p>b. <code>C/C++</code> —&gt; <code>常规</code> —&gt; <code>附加包含目录</code>  —&gt; 添加路径： <code>C:\boost_1_71_0</code></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191111110923.png"/></p>
+<blockquote>
+<p>注意： 一定要在项目中添加了 <code>C++</code> 文件之后，项目属性设置中才会出现 <code>C/C++</code>的选项。</p>
+</blockquote>
+<p>接下来程序就可以正常运行了。</p>
+<p>对比程序：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/thread.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(<span class="keyword">int</span> seconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	boost::this_thread::sleep(boost::posix_time::seconds(seconds));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">threadFun</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i)</span><br><span class="line">	&#123;</span><br><span class="line">		wait(<span class="number">1</span>);</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	boost::<span class="function">thread <span class="title">t</span><span class="params">(threadFun)</span></span>;  <span class="comment">// 上面的那个函数</span></span><br><span class="line">	t.join();  <span class="comment">// join() 方法是一个阻塞调用：它可以暂停当前线程，直到调用 join() 的线程运行结束。</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>杂记</category>
+      </categories>
+      <tags>
+        <tag>杂记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CUDA_01组织并行线程</title>
+    <url>/2019/11/09/CUDA_01%E7%BB%84%E7%BB%87%E5%B9%B6%E8%A1%8C%E7%BA%BF%E7%A8%8B/</url>
     <content><![CDATA[<p>CUDA编程中最重要的一环就是如何让数据并行计算，要想实现较为高效的并行计算就需要在CUDA编程时手动为每个数据分配线程，这就涉及到如何在不同的grid 和 block 中计算出合适线程的id号。</p>
 <a id="more"></a>
 <h2 id="CUDA组织并行线程"><a href="#CUDA组织并行线程" class="headerlink" title="CUDA组织并行线程"></a>CUDA组织并行线程</h2><p><a href="https://face2ai.com/cuda-f-2-3-%e7%bb%84%e7%bb%87%e5%b9%b6%e8%a1%8c%e7%ba%bf%e7%a8%8b/" target="_blank" rel="noopener">文章参考</a></p>
@@ -54,6 +395,84 @@
       <tags>
         <tag>CUDA</tag>
         <tag>CPP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>20191106记录</title>
+    <url>/2019/11/06/20191106%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>堆、判断2的幂次方、Python线程安全</p>
+<a id="more"></a>
+<h2 id="Python的线程安全"><a href="#Python的线程安全" class="headerlink" title="Python的线程安全"></a>Python的线程安全</h2><p>什么是线程安全？</p>
+<p>在一段程序中，如果两个线程t1,t2共享一个全局变量，且这多个线程对同一个全局变量操作会出现资源竞争的问题，从而导致结果会不正确，即遇到线程安全的问题。所以一般采用线程同步或互斥锁机制保证共享数据在任何时刻，最多有一个线程访问，以保证数据的正确性。</p>
+<p>其中Python内置类型： ditc, list, tuple是线程安全的。</p>
+<p><a href="https://blog.csdn.net/u010649766/article/details/79740873" target="_blank" rel="noopener">参考</a></p>
+<h2 id="快速判断一个数是否是-2-的幂次方"><a href="#快速判断一个数是否是-2-的幂次方" class="headerlink" title="快速判断一个数是否是 2 的幂次方"></a>快速判断一个数是否是 2 的幂次方</h2><p>如果将这个数减去1后会发现，仅有的那个1会变为0，而原来的那n个0会变为1；因此将原来的数与去减去1后的数字进行与运算后会发现为零。<br>例如：</p>
+<script type="math/tex; mode=display">1000 \& 0111 = 0000</script><p>则8(1000)就是2的幂次方。</p>
+<p><a href="https://blog.csdn.net/wanrenwangxuejing/article/details/28940769" target="_blank" rel="noopener">参考</a></p>
+<h2 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h2><p><a href="https://www.cnblogs.com/lanhaicode/p/10546257.html" target="_blank" rel="noopener">来源</a></p>
+<p>堆是一种 <strong>非线性结构</strong> ，可以把堆看作一个数组，也可以被看作是一个 <strong>完全二叉树</strong> (若设二叉树的深度为h，除第 h 层外，其它各层 (1～h-1) 的结点数都达到最大个数，第 h 层所有的结点都连续集中在最左边，这就是完全二叉树。)， 堆其实就是 <strong>利用完全二叉树的结构来维护的一维数组。</strong></p>
+<p>大顶堆： 每个节点的值都 <strong>大于或等于</strong> 其左右孩子节点的值；</p>
+<p>小顶堆： 每个节点的值都 <strong>小于或等于</strong> 其左右孩子节点的值；</p>
+<p>堆的这种特性非常有用，常常被当作 <strong>优先队列</strong> 使用，因为可以快速的访问到“最重要”的元素。</p>
+<p><strong>堆特点：</strong></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107131510.png"/></p>
+<p>对堆中的节点按层进行编号，映射到数组中：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107131622.png"/></p>
+<p>所以有如下堆的定义：</p>
+<p>大顶堆：</p>
+<script type="math/tex; mode=display">arr[i] \geq arr[2i+1] \&\& arr[i] \geq arr[2i+2]</script><p>小定顶堆：</p>
+<script type="math/tex; mode=display">a[i] \leq arr[2i+1] \&\& arr[i] \leq arr[2i+2]</script><p><strong>堆排序的过程：</strong></p>
+<p>基本思想：</p>
+<ol>
+<li>将待排序序列构造成一个大顶堆，此时整个序列的最大值就是堆顶的根节点。</li>
+<li>将其与末尾元素进行交换，此时末尾就为最大值。</li>
+<li>然后将剩余 n-1 个元素重新构造成一个堆，这样会得到 n 个元素的次小值。</li>
+<li>如此反复执行，便能得到一个有序序列了，建立最大堆时是从 <strong>最后一个非叶子节点</strong> 开始从下往上调整的。</li>
+</ol>
+<p>升序 — 大顶堆；<br>降序 — 小顶堆；</p>
+<p><a href="https://www.cnblogs.com/chengxiao/p/6129630.html" target="_blank" rel="noopener">具体步骤:</a></p>
+<p><strong>步骤一： 构造初始堆，将给定的无序序列构造成一个大顶堆：</strong></p>
+<ol>
+<li>给定无序序列如下：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107133021.png" weight='300' height='300'/></p>
+<ol>
+<li>从最后一个非叶子节点(<code>arr.length/2 -1 = 5/2-1 = 1</code>，也就是下面的 6 节点)，从左至右，从下往上进行调整：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107133334.png"/></p>
+<p>节点6先和其左孩子比较<code>a[2 * 1 + 1] = arr[3] =5</code> ,因为6 &gt; 5所以不作调整；<br>和其右孩子比较<code>a[2 * 1 + 2] = arr[4] =9</code>, 因为 9 &gt; 6 ，所以两者进行交换</p>
+<ol>
+<li>找到下一个非叶子节点，当前坐标-1即 1-1 = 0，即第二个非叶子节点为4, [4,9,8]中9元素最大， 4和9 交换：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107140047.png"/></p>
+<ol>
+<li>这时，交换导致了子根[4,5,6]混乱，继续调整，[4,5,6]中 6 最大，交换 4 和6：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107140247.png"/></p>
+<p><strong>步骤二：将堆顶元素和末尾元素进行交换，使末尾元素最大。然后继续调整堆，再将堆顶元素与末尾元素交换，得到第二大元素。如此反复进行交换、重建、交换：</strong></p>
+<ol>
+<li>将堆顶元素9 和末尾元素4 进行交换：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107140902.png"/></p>
+<ol>
+<li>重新调整结构，使其继续满足堆定义：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107140951.png"/></p>
+<ol>
+<li>再将堆顶元素 8 与末尾元素 5 进行交换，得到第二大元素8：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107141044.png"/></p>
+<ol>
+<li>后续过程，继续进行调整、交换，如此反复，最终使得整个序列有序：</li>
+</ol>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191107141321.png" width="300" /></p>
+<p>代码：</p>
+]]></content>
+      <categories>
+        <category>杂记</category>
+      </categories>
+      <tags>
+        <tag>杂记</tag>
       </tags>
   </entry>
   <entry>

@@ -55,13 +55,13 @@
   <meta name="description" content="风雨兼程">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Odyssey">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;tags&#x2F;cpp&#x2F;index.html">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;tags&#x2F;CPP&#x2F;index.html">
 <meta property="og:site_name" content="Odyssey">
 <meta property="og:description" content="风雨兼程">
 <meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/tags/cpp/">
+<link rel="canonical" href="http://yoursite.com/tags/CPP/">
 
 
 <script id="page-configurations">
@@ -75,7 +75,7 @@
   };
 </script>
 
-  <title>标签: cpp | Odyssey</title>
+  <title>标签: CPP | Odyssey</title>
   
 
 
@@ -217,7 +217,7 @@
   <div class="post-block">
     <div class="posts-collapse">
       <div class="collection-title">
-        <h1 class="collection-header">cpp
+        <h1 class="collection-header">CPP
           <small>标签</small>
         </h1>
       </div>
@@ -232,35 +232,15 @@
 
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2019-11-04T00:00:00+08:00"
-              content="2019-11-04">
-          11-04
+              datetime="2019-11-09T13:33:04+08:00"
+              content="2019-11-09">
+          11-09
         </time>
       </div>
 
       <h2 class="post-title">
-          <a class="post-title-link" href="/2019/11/04/STL%E5%AE%B9%E5%99%A8%E6%96%87%E6%A1%A3/" itemprop="url">
-            <span itemprop="name">STL 容器记录</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-11-03T00:00:00+08:00"
-              content="2019-11-03">
-          11-03
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2019/11/03/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95%E8%AE%B0%E5%BD%95/" itemprop="url">
-            <span itemprop="name">图论算法记录</span>
+          <a class="post-title-link" href="/2019/11/09/CUDA_01%E7%BB%84%E7%BB%87%E5%B9%B6%E8%A1%8C%E7%BA%BF%E7%A8%8B/" itemprop="url">
+            <span itemprop="name">CUDA_01组织并行线程</span>
           </a>
       </h2>
 
@@ -318,20 +298,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -370,12 +350,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">32k</span>
+    <span title="站点总字数">44k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">53 分钟</span>
+    <span title="站点阅读时长">1:13</span>
 </div>
 
         
@@ -447,6 +427,49 @@
     TeX: {
         extensions: ['[mhchem]/mhchem.js'],
       equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+
+</body>
+</html>
         autoNumber: 'AMS'
       }
     }

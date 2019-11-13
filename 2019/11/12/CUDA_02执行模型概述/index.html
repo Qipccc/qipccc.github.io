@@ -52,23 +52,25 @@
   };
 </script>
 
-  <meta name="description" content="对于常见的深度学习，如CNN,RNN,DNN,GRU,LSTM，如果可以在设计模型时就能设计出模型的参数量，那对于后续的性能优化、模型部署调优都会有一个直观上的感受和帮助。">
-<meta name="keywords" content="深度学习">
+  <meta name="description" content="GPU架构学习">
+<meta name="keywords" content="CUDA">
 <meta property="og:type" content="article">
-<meta property="og:title" content="常见神经网络模型量估计">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;05&#x2F;%E5%B8%B8%E8%A7%81%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E9%87%8F%E4%BC%B0%E8%AE%A1&#x2F;index.html">
+<meta property="og:title" content="CUDA_02执行模型概述">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;12&#x2F;CUDA_02%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0&#x2F;index.html">
 <meta property="og:site_name" content="Odyssey">
-<meta property="og:description" content="对于常见的深度学习，如CNN,RNN,DNN,GRU,LSTM，如果可以在设计模型时就能设计出模型的参数量，那对于后续的性能优化、模型部署调优都会有一个直观上的感受和帮助。">
+<meta property="og:description" content="GPU架构学习">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191105212219.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191105210926.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191012003103.png">
-<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191012003245.png">
-<meta property="og:updated_time" content="2019-11-05T13:26:39.948Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112104551.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;7FF8E397A2433A1D7678F72C97558C6A.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191113095019.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112145014.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112145117.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112150046.png">
+<meta property="og:updated_time" content="2019-11-13T02:08:56.238Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191105212219.png">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20191112104551.png">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/05/%E5%B8%B8%E8%A7%81%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E9%87%8F%E4%BC%B0%E8%AE%A1/">
+<link rel="canonical" href="http://yoursite.com/2019/11/12/CUDA_02%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0/">
 
 
 <script id="page-configurations">
@@ -82,7 +84,7 @@
   };
 </script>
 
-  <title>常见神经网络模型量估计 | Odyssey</title>
+  <title>CUDA_02执行模型概述 | Odyssey</title>
   
 
 
@@ -223,7 +225,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/05/%E5%B8%B8%E8%A7%81%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E9%87%8F%E4%BC%B0%E8%AE%A1/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/CUDA_02%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -236,7 +238,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          常见神经网络模型量估计
+          CUDA_02执行模型概述
         </h1>
 
         <div class="post-meta">
@@ -245,18 +247,24 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2019-11-05 21:13:55 / 修改时间：21:26:39" itemprop="dateCreated datePublished" datetime="2019-11-05T21:13:55+08:00">2019-11-05</time>
+              <time title="创建时间：2019-11-12 09:31:23" itemprop="dateCreated datePublished" datetime="2019-11-12T09:31:23+08:00">2019-11-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-11-13 10:08:56" itemprop="dateModified" datetime="2019-11-13T10:08:56+08:00">2019-11-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
-                    <span itemprop="name">深度学习</span>
+                  <a href="/categories/CUDA/" itemprop="url" rel="index">
+                    <span itemprop="name">CUDA</span>
                   </a>
                 </span>
             </span>
@@ -267,7 +275,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.4k</span>
+              <span>1.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -286,59 +294,88 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>对于常见的深度学习，如CNN,RNN,DNN,GRU,LSTM，如果可以在设计模型时就能设计出模型的参数量，那对于后续的性能优化、模型部署调优都会有一个直观上的感受和帮助。</p>
+        <p>GPU架构学习</p>
 <a id="more"></a>
-<h2 id="1-CNN参数个数"><a href="#1-CNN参数个数" class="headerlink" title="1. CNN参数个数"></a>1. CNN参数个数</h2><p>常见CNN模型一般包含以下几种类型的层：卷积层、池化层和全连接层。假设卷积核大小为H*W， input channel为I，out channel为O。</p>
+<p><a href="https://face2ai.com/cuda-f-3-1-cuda%e6%89%a7%e8%a1%8c%e6%a8%a1%e5%9e%8b%e6%a6%82%e8%bf%b0/" target="_blank" rel="noopener">参考1: CUDA执行模型概述</a></p>
+<p><a href="https://www.cnblogs.com/timlly/p/11471507.html#%E5%9B%9Bgpu%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6" target="_blank" rel="noopener">参考2: 深入GPU硬件架构及运行机制</a></p>
+<h2 id="CUDA-编程模型和硬件模型对应"><a href="#CUDA-编程模型和硬件模型对应" class="headerlink" title="CUDA 编程模型和硬件模型对应"></a>CUDA 编程模型和硬件模型对应</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112104551.png"/></p>
+<p>线程块中通过共享内存和寄存器相互通信协调，寄存器和共享内存的分配可以严重影响性能。</p>
+<p>因为SM有限，虽然在编程模型看所有线程都是并行执行，但是在微观上看，所有线程也是分批次在物理层面的机器上执行，线程块(block)里不同的线程可能进度都不一样，但是同一个线程束的线程拥有相同的进度。</p>
+<p>并行就会引起竞争，多线程以未定义的顺序访问同一个数据，就导致了不可预测的行为，CUDA只提供了一种块内（块内线程间）同步的方式，块之间没办法同步！</p>
+<p>同一个SM上可以有不止一个常驻的线程束，有些在执行，有些在等待，他们之间状态的转换是不需要开销的。<strong>每个SM</strong> 都将 <strong>分配给它的线程块</strong> 划分到包含32个线程（我的理解，这32 个线程就是对应到SM硬件图中的core）的线程束中，然后在可用的硬件资源上调度执行。</p>
+<h2 id="Nvidia-Fermi架构"><a href="#Nvidia-Fermi架构" class="headerlink" title="Nvidia Fermi架构"></a>Nvidia Fermi架构</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/7FF8E397A2433A1D7678F72C97558C6A.jpg"/></p>
+<p>解释：</p>
+<ul>
+<li><p>Fermi架构</p>
 <ol>
-<li>卷积层(Convolutional Layer):</li>
+<li><p><strong>L2 Cache:</strong>  768 KB 的二级缓存，被所有SM共享；</p>
+</li>
+<li><p><strong>DRAM:</strong> 6 个 384-bits 的GDRR5内存接口；</p>
+</li>
+<li><p><strong>GigaThread引擎：</strong> 全局调度器，分配线程块到SM线程束调度器上；</p>
+</li>
+<li><p><strong>SM(流多处理器器Stream Multiprocessor):</strong> 16个SM，每个SM支持数百个线程并发执行，当一个核函数的网格被启动的时候，多个block会被同时分配给可用的SM上执行。</p>
+</li>
 </ol>
-<p>该层filter数量总数为(H x W x I)，每个将被映射到新的输出通道上，加上每个filter的计算要有一个bias，所以总的参数数量为：(H x W x I + 1) x O</p>
+</li>
+<li><p>SM</p>
 <ol>
-<li>池化层(Pooling Layer)：</li>
+<li><p><strong>2 个 Warp(线程束):</strong> 采用单指令多线程 SIMT 架构管理执行线程，每个线程束中包括 16个Core， Warp编排器（Warp Scheduler），分发单元（Dispatch Unit）；</p>
+</li>
+<li><p><strong>Warp编排器(Warp Scheduler)</strong>， 线程束调度器，</p>
+</li>
+<li><p><strong>分发单元(Dispatch Unit)</strong>， 指令调度（分配）单元，存储两个线程束要执行的命令，</p>
+</li>
+<li><p><strong>寄存器文件(Register File)</strong></p>
+</li>
+<li><p><strong>16组加载存储单元（LD/ST）</strong></p>
+</li>
+<li><p><strong>4 个特殊函数单元（SFU）</strong> 执行固有指令，如正弦、余弦、平方根和差值</p>
+</li>
+<li><p><strong>共享内存/一级缓存</strong></p>
+</li>
+<li><p><strong>CUDA核心</strong></p>
+</li>
 </ol>
-<p>一般的池化层属于固定操作，没有权重传播</p>
-<h2 id="2-全连接层参数个数"><a href="#2-全连接层参数个数" class="headerlink" title="2. 全连接层参数个数"></a>2. 全连接层参数个数</h2><p>前后是n,m维的输入输出，所以其参数数量为(n+1) x m</p>
-<blockquote>
-<p>以下循环神经网络均已单层为例</p>
-</blockquote>
-<h2 id="3-RNN参数个数"><a href="#3-RNN参数个数" class="headerlink" title="3. RNN参数个数"></a>3. RNN参数个数</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191105212219.png"/></p>
-<p>图上W,U,V在RNN的每一步中都是共享的参数，所以其参数量为：</p>
-<script type="math/tex; mode=display">Number = n^2+kn+nm</script><ul>
-<li>n- 隐藏层的维度</li>
-<li>k- 输出层的维度</li>
-<li>m- 输入层的维度</li>
-</ul>
-<p>$n^2$ 就是 $W*W$部分<br>$kn$ 就是$WV$部分<br>$nm$ 就是$UW$部分</p>
-<h2 id="4-LSTM参数个数"><a href="#4-LSTM参数个数" class="headerlink" title="4. LSTM参数个数"></a>4. LSTM参数个数</h2><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191105210926.png"/></p>
-<p>LSTM一共维护四套参数，分别对应输入门、输出门、遗忘门和候选态，总参数数量：</p>
-<script type="math/tex; mode=display">Number = 4 * n * (m + 1 + n)</script><ul>
-<li>n- 隐藏层的维度</li>
-<li>m- 输入层的维度</li>
-<li>1 表示的是偏置项</li>
-</ul>
-<p>例如:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line">rnn = nn.LSTM(input_size=<span class="number">100</span>, hidden_size=<span class="number">512</span>, num_layers=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
-<p>所以参数个数为：<script type="math/tex">4 \times 512 \times (100+1+512) = 1255424</script></p>
-<h2 id="5-GRU参数个数"><a href="#5-GRU参数个数" class="headerlink" title="5. GRU参数个数"></a>5. GRU参数个数</h2><p>和LSTM类似，但是只有三套参数，更新门、重置门、候选态，总参数量为：</p>
-<script type="math/tex; mode=display">Number = 3 \times n \times (m + 1 + n)</script><ul>
-<li>n- 隐藏层的维度</li>
-<li>m- 输入层的维度</li>
-<li>1 表示的是偏置项</li>
-</ul>
+</li>
+<li><p>CUDA核心</p>
 <ol>
-<li>实验：</li>
+<li><p><strong>一个 FP Unit:</strong> 浮点数运算单元FPU；</p>
+</li>
+<li><p><strong>一个 INT Unit:</strong> 全流水线的整数算数逻辑单元 ALU；</p>
+</li>
 </ol>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyModel</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span>  </span><br><span class="line">        super(MyModel, self).__init__()</span><br><span class="line">        self.lstm = nn.LSTM(input_size=<span class="number">100</span>, hidden_size=<span class="number">512</span>, num_layers=<span class="number">1</span>)</span><br><span class="line"><span class="comment">#         self.rnn = nn.RNN(input_size=100, hidden_size=512, num_layers=1)</span></span><br><span class="line"><span class="comment">#         self.gru = nn.GRU(input_size=100, hidden_size=512, num_layers=1)</span></span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span>  </span><br><span class="line">        <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line">net = MyModel()</span><br><span class="line">params = list(net.parameters())</span><br><span class="line">k = <span class="number">0</span></span><br><span class="line">all_num = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> params:</span><br><span class="line">    l = <span class="number">1</span></span><br><span class="line">    print(<span class="string">"该层的结构："</span> + str(list(i.size())))</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> i.size():</span><br><span class="line">        l *= j</span><br><span class="line">    print(<span class="string">"该层参数和："</span> + str(l))</span><br><span class="line">    k = k + l</span><br><span class="line">print(<span class="string">"参数总和："</span>+str(k))</span><br></pre></td></tr></table></figure>
-<p>以lstm为例输出：</p>
-<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191012003103.png" width='200' height='200'/></p>
-<p>可以看到LSTM输出比预期的参数多了 512*4 = 2048</p>
-<p>同样，GRU会比预期的参数多 512*3 = 1536</p>
-<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191012003245.png"/></p>
-<p>似乎是多一个偏置项，但是从<a href="https://www.cnblogs.com/wushaogui/p/9176617.html" target="_blank" rel="noopener">参考连接</a>他人用keras好像没有问题，难道是框架的问题？之后再做一下实验。。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考:"></a>参考:</h2><p><a href="https://datascience.stackexchange.com/questions/10589/number-of-parameters-in-an-rnn" target="_blank" rel="noopener">RNN参数量</a></p>
-<p><a href="https://blog.csdn.net/taoyafan/article/details/82803943" target="_blank" rel="noopener">LSTM参数量</a></p>
-<p><a href="https://stats.stackexchange.com/questions/328926/how-many-parameters-are-in-a-gated-recurrent-unit-gru-recurrent-neural-network" target="_blank" rel="noopener">GRU参数量</a></p>
-<p><a href="https://blog.csdn.net/jdzwanghao/article/details/84196239" target="_blank" rel="noopener">pytorch参数量计算</a></p>
+</li>
+</ul>
+<p><strong>SM 的中文对照：</strong></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191113095019.png" width="400"/></p>
+<h2 id="Kepler-架构"><a href="#Kepler-架构" class="headerlink" title="Kepler 架构"></a>Kepler 架构</h2><p>是Fermi的后代</p>
+<pre><code>- 强化了SM
+
+- 动态并行
+
+- Hyper-Q 技术
+</code></pre><p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112145014.png"/></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112145117.png"/></p>
+<p>SMX是改进的架构，支持动态创建渲染线程，以降低延迟。</p>
+<p>Hyper-Q技术主要是CPU和GPU之间的同步硬件连接，以确保CPU在GPU执行的同事做更多的工作。Fermi架构下CPU控制GPU只有一个队列，Kepler架构下可以通过Hyper-Q技术实现多个队列：</p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20191112150046.png"/></p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>想要优化速度，先要学好使用使用性能优化工具：</p>
+<ul>
+<li><p>nvvp</p>
+</li>
+<li><p>nvprof</p>
+</li>
+</ul>
+<p>限制内核性能的主要包括但不限于y一下因素：</p>
+<ul>
+<li><p>存储宽带</p>
+</li>
+<li><p>计算资源</p>
+</li>
+<li><p>指令和内存延迟</p>
+</li>
+</ul>
 
     </div>
 
@@ -348,23 +385,23 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" rel="tag"># 深度学习</a>
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2019/11/04/STL%E5%AE%B9%E5%99%A8%E6%96%87%E6%A1%A3/" rel="next" title="STL 容器记录">
-                  <i class="fa fa-chevron-left"></i> STL 容器记录
+                <a href="/2019/11/11/Boost%E7%BC%96%E8%AF%91%E4%B8%8E%E9%85%8D%E7%BD%AE/" rel="next" title="Boost编译与配置">
+                  <i class="fa fa-chevron-left"></i> Boost编译与配置
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-                <a href="/2019/11/05/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="prev" title="网络编程知识点">
-                  网络编程知识点 <i class="fa fa-chevron-right"></i>
+                <a href="/2019/11/12/CUDA_03%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%9D%9F%E7%9A%84%E6%89%A7%E8%A1%8C/" rel="prev" title="CUDA_03理解线程束的执行">
+                  CUDA_03理解线程束的执行 <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
@@ -409,7 +446,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CNN参数个数"><span class="nav-text">1. CNN参数个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-全连接层参数个数"><span class="nav-text">2. 全连接层参数个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-RNN参数个数"><span class="nav-text">3. RNN参数个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-LSTM参数个数"><span class="nav-text">4. LSTM参数个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-GRU参数个数"><span class="nav-text">5. GRU参数个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考:</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CUDA-编程模型和硬件模型对应"><span class="nav-text">CUDA 编程模型和硬件模型对应</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nvidia-Fermi架构"><span class="nav-text">Nvidia Fermi架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kepler-架构"><span class="nav-text">Kepler 架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后"><span class="nav-text">最后</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
