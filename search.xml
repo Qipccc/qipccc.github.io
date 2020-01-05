@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用</title>
+    <url>/2020/01/05/ROS%E9%85%8D%E7%BD%AE%E4%B8%8EDaocloud%E9%83%A8%E7%BD%B2/</url>
+    <content><![CDATA[<p>使用Docker打包ROS，以及在Daocloud上进行Build。如何在windows下安装docker，编写Dockerfile，编写docker-compose，以及最后如何在Daocloud上Build？最后在windows下使用ROS</p>
+<a id="more"></a>
+<h2 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h2><h2 id="Dockerfile编写"><a href="#Dockerfile编写" class="headerlink" title="Dockerfile编写"></a>Dockerfile编写</h2><h2 id="Daocloud-build并拉取"><a href="#Daocloud-build并拉取" class="headerlink" title="Daocloud build并拉取"></a>Daocloud build并拉取</h2><h2 id="dokcer-compose编写"><a href="#dokcer-compose编写" class="headerlink" title="dokcer-compose编写"></a>dokcer-compose编写</h2><h2 id="Win10下借助Docker使用ROS"><a href="#Win10下借助Docker使用ROS" class="headerlink" title="Win10下借助Docker使用ROS"></a>Win10下借助Docker使用ROS</h2>]]></content>
+      <categories>
+        <category>机械臂</category>
+      </categories>
+      <tags>
+        <tag>ROS</tag>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>URVision</title>
     <url>/2019/12/01/URVision/</url>
     <content><![CDATA[<p>利用计算机视觉技术，对贴砖过程的进行实时校准</p>
@@ -102,7 +116,7 @@
 <p>手眼标定(Hand-eye claibration problem)，可以分为两种情况:<strong>局部手眼</strong>，<strong>全局手眼</strong>。</p>
 <p><strong>局部手眼(eye-in-hand)</strong>：也叫随动手眼,相机随着机器人末端进行移动；</p>
 <p><strong>全局手眼(eye-to-hand)</strong>：也叫固定手眼，相机是不动的，观察机器人移动。</p>
-<p><img src="https://pic3.zhimg.com/80/v2-7b613c28b0ca55f86b20a5f281d8ddf2_hd.jpg" alt="Hand-eye claibration problem"></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20200105135628.png"/></p>
 <p>因为在这里，机器人位于移动底盘上，所以相机必须要跟着机器人一起移动，所以采用 <strong>局部手眼(eye-in-hand)</strong> 的方式。</p>
 <h3 id="2-1-1-转换矩阵的确定"><a href="#2-1-1-转换矩阵的确定" class="headerlink" title="2.1.1 转换矩阵的确定"></a>2.1.1 转换矩阵的确定</h3><p>主要是三个转换矩阵：</p>
 <p>注意：下面讲到的所有世界坐标系都是指UR机器人的的基座坐标系。</p>
@@ -122,7 +136,7 @@
 </blockquote>
 <p>简单来说就是将图像像素坐标上的点转换到相机坐标系。</p>
 <p><strong>图像像素坐标：</strong> 图像像素坐标系是以左上角为零点，水平向右为x正方向，垂直向下为y正方向，如下图所示：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1517784-14301c0d3f6eed8e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/511/format/webp" alt=""></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20200105135721.png"/></p>
 <p>所以像素坐标系与相机坐标系之间的转换关系其实就是计算相机的内部参数矩阵，而这部分是需要通过标定板来进行标定的。关于相机标定，opencv官方就已经由一些<a href="https://docs.opencv.org/3.4.2/d4/d94/tutorial_camera_calibration.html" target="_blank" rel="noopener">解释</a>，同时在官方github中也有了calibrate的<a href="https://github.com/opencv/opencv/blob/3.4/samples/python/calibrate.py" target="_blank" rel="noopener">例子</a>，参考这些就可以把内部参数求解出来。当我们使用相机标定矩阵时，注意标定板应该在固定位置保持不变，使机器人在大概12个不同的位置角度对其进行拍摄。</p>
 <p>这里$H_{pc}$是相机内部参数矩阵的增广矩阵:</p>
 <script type="math/tex; mode=display">H_{pc} = \begin{bmatrix} cameraMatrix \mid 0\end{bmatrix}_{3 \times 4}</script><blockquote>

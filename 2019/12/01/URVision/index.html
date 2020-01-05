@@ -66,8 +66,8 @@
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;soogif.gif">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;urgif.gif">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;贴砖策略示意图.jpg">
-<meta property="og:image" content="https:&#x2F;&#x2F;pic3.zhimg.com&#x2F;80&#x2F;v2-7b613c28b0ca55f86b20a5f281d8ddf2_hd.jpg">
-<meta property="og:image" content="https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;1517784-14301c0d3f6eed8e.png?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;511&#x2F;format&#x2F;webp">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20200105135628.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;20200105135721.png">
 <meta property="og:image" content="https:&#x2F;&#x2F;torsteinmyhre.name&#x2F;snippets&#x2F;robcam_calibration&#x2F;images&#x2F;extrinsic-camera-calibration-eye-in-hand-651px.png">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;calibrate1.png">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;calibrate2.png">
@@ -75,7 +75,7 @@
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;threetype.PNG">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;postype1.jpg">
 <meta property="og:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;postype0.jpg">
-<meta property="og:updated_time" content="2019-12-01T11:50:19.068Z">
+<meta property="og:updated_time" content="2020-01-05T05:57:31.695Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;qipccc-alipic.oss-cn-shanghai.aliyuncs.com&#x2F;images&#x2F;PositionInitialize.jpg">
 
@@ -256,10 +256,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2019-12-01 19:40:14 / 修改时间：19:50:19" itemprop="dateCreated datePublished" datetime="2019-12-01T19:40:14+08:00">2019-12-01</time>
+              <time title="创建时间：2019-12-01 19:40:14" itemprop="dateCreated datePublished" datetime="2019-12-01T19:40:14+08:00">2019-12-01</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-05 13:57:31" itemprop="dateModified" datetime="2020-01-05T13:57:31+08:00">2020-01-05</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -396,7 +402,7 @@
 <p>手眼标定(Hand-eye claibration problem)，可以分为两种情况:<strong>局部手眼</strong>，<strong>全局手眼</strong>。</p>
 <p><strong>局部手眼(eye-in-hand)</strong>：也叫随动手眼,相机随着机器人末端进行移动；</p>
 <p><strong>全局手眼(eye-to-hand)</strong>：也叫固定手眼，相机是不动的，观察机器人移动。</p>
-<p><img src="https://pic3.zhimg.com/80/v2-7b613c28b0ca55f86b20a5f281d8ddf2_hd.jpg" alt="Hand-eye claibration problem"></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20200105135628.png"/></p>
 <p>因为在这里，机器人位于移动底盘上，所以相机必须要跟着机器人一起移动，所以采用 <strong>局部手眼(eye-in-hand)</strong> 的方式。</p>
 <h3 id="2-1-1-转换矩阵的确定"><a href="#2-1-1-转换矩阵的确定" class="headerlink" title="2.1.1 转换矩阵的确定"></a>2.1.1 转换矩阵的确定</h3><p>主要是三个转换矩阵：</p>
 <p>注意：下面讲到的所有世界坐标系都是指UR机器人的的基座坐标系。</p>
@@ -416,7 +422,7 @@
 </blockquote>
 <p>简单来说就是将图像像素坐标上的点转换到相机坐标系。</p>
 <p><strong>图像像素坐标：</strong> 图像像素坐标系是以左上角为零点，水平向右为x正方向，垂直向下为y正方向，如下图所示：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1517784-14301c0d3f6eed8e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/511/format/webp" alt=""></p>
+<p><img src="https://qipccc-alipic.oss-cn-shanghai.aliyuncs.com/images/20200105135721.png"/></p>
 <p>所以像素坐标系与相机坐标系之间的转换关系其实就是计算相机的内部参数矩阵，而这部分是需要通过标定板来进行标定的。关于相机标定，opencv官方就已经由一些<a href="https://docs.opencv.org/3.4.2/d4/d94/tutorial_camera_calibration.html" target="_blank" rel="noopener">解释</a>，同时在官方github中也有了calibrate的<a href="https://github.com/opencv/opencv/blob/3.4/samples/python/calibrate.py" target="_blank" rel="noopener">例子</a>，参考这些就可以把内部参数求解出来。当我们使用相机标定矩阵时，注意标定板应该在固定位置保持不变，使机器人在大概12个不同的位置角度对其进行拍摄。</p>
 <p>这里$H_{pc}$是相机内部参数矩阵的增广矩阵:</p>
 <script type="math/tex; mode=display">H_{pc} = \begin{bmatrix} cameraMatrix \mid 0\end{bmatrix}_{3 \times 4}</script><blockquote>
@@ -542,6 +548,9 @@ H_{cj}=H_{cij}H_{ci}
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
+                <a href="/2020/01/05/ROS%E9%85%8D%E7%BD%AE%E4%B8%8EDaocloud%E9%83%A8%E7%BD%B2/" rel="prev" title="在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用">
+                  在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用 <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
       </footer>
@@ -601,7 +610,7 @@ H_{cj}=H_{cij}H_{ci}
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -614,7 +623,7 @@ H_{cj}=H_{cij}H_{ci}
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -644,7 +653,7 @@ H_{cj}=H_{cij}H_{ci}
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2019</span>
+  <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

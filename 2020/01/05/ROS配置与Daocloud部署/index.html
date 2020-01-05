@@ -52,17 +52,18 @@
   };
 </script>
 
-  <meta name="description" content="劝 君 莫 惜 金 缕 衣，  劝 君 惜 取 少 年 时。  花 开 堪 折 直 须 折，  莫 待 无 花 空 折 枝。        qipccc7@gmail.com   Odyssey，取自《奥德赛》，史诗的征程就在脚下，珍惜年少把握机会，莫叹息自卑贪图享乐。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Odyssey">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;about&#x2F;index.html">
+  <meta name="description" content="使用Docker打包ROS，以及在Daocloud上进行Build。如何在windows下安装docker，编写Dockerfile，编写docker-compose，以及最后如何在Daocloud上Build？最后在windows下使用ROS">
+<meta name="keywords" content="ROS,Docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;05&#x2F;ROS%E9%85%8D%E7%BD%AE%E4%B8%8EDaocloud%E9%83%A8%E7%BD%B2&#x2F;index.html">
 <meta property="og:site_name" content="Odyssey">
-<meta property="og:description" content="劝 君 莫 惜 金 缕 衣，  劝 君 惜 取 少 年 时。  花 开 堪 折 直 须 折，  莫 待 无 花 空 折 枝。        qipccc7@gmail.com   Odyssey，取自《奥德赛》，史诗的征程就在脚下，珍惜年少把握机会，莫叹息自卑贪图享乐。">
+<meta property="og:description" content="使用Docker打包ROS，以及在Daocloud上进行Build。如何在windows下安装docker，编写Dockerfile，编写docker-compose，以及最后如何在Daocloud上Build？最后在windows下使用ROS">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-09T15:29:00.920Z">
+<meta property="og:updated_time" content="2020-01-05T05:44:49.639Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/about/">
+<link rel="canonical" href="http://yoursite.com/2020/01/05/ROS%E9%85%8D%E7%BD%AE%E4%B8%8EDaocloud%E9%83%A8%E7%BD%B2/">
 
 
 <script id="page-configurations">
@@ -70,14 +71,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
-    isPage: true,
+    isPost: true,
+    isPage: false,
     isArchive: false
   };
 </script>
 
-  <title> | Odyssey
-  </title>
+  <title>在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用 | Odyssey</title>
   
 
 
@@ -209,72 +209,124 @@
       <div class="main-inner">
         <div class="content-wrap">
           
-  
-  
 
           <div class="content">
             
 
   <div class="posts-expand">
-    
-    
-    
-    <div class="post-block" lang="zh-CN">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/05/ROS%E9%85%8D%E7%BD%AE%E4%B8%8EDaocloud%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="qipccc">
+      <meta itemprop="description" content="风雨兼程">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Odyssey">
+    </span>
       <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在Docker中进行ROS配置与Daocloud部署以及Win下ROS使用
+        </h1>
 
-<h1 class="post-title" itemprop="name headline">
-</h1>
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
 
-<div class="post-meta">
+              <time title="创建时间：2020-01-05 13:34:42 / 修改时间：13:44:49" itemprop="dateCreated datePublished" datetime="2020-01-05T13:34:42+08:00">2020-01-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E6%A2%B0%E8%87%82/" itemprop="url" rel="index">
+                    <span itemprop="name">机械臂</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>193</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>使用Docker打包ROS，以及在Daocloud上进行Build。如何在windows下安装docker，编写Dockerfile，编写docker-compose，以及最后如何在Daocloud上Build？最后在windows下使用ROS</p>
+<a id="more"></a>
+<h2 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h2><h2 id="Dockerfile编写"><a href="#Dockerfile编写" class="headerlink" title="Dockerfile编写"></a>Dockerfile编写</h2><h2 id="Daocloud-build并拉取"><a href="#Daocloud-build并拉取" class="headerlink" title="Daocloud build并拉取"></a>Daocloud build并拉取</h2><h2 id="dokcer-compose编写"><a href="#dokcer-compose编写" class="headerlink" title="dokcer-compose编写"></a>dokcer-compose编写</h2><h2 id="Win10下借助Docker使用ROS"><a href="#Win10下借助Docker使用ROS" class="headerlink" title="Win10下借助Docker使用ROS"></a>Win10下借助Docker使用ROS</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ROS/" rel="tag"># ROS</a>
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/12/01/URVision/" rel="next" title="URVision">
+                  <i class="fa fa-chevron-left"></i> URVision
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
-</div>
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
-          <p><br/></p>
-<center><font size=4.5 face="微软雅黑">劝 君 莫 惜 金 缕 衣，</font></center>
-<br/>
-<center><font size=4.5 face="微软雅黑">劝 君 惜 取 少 年 时。</font></center>
-<br/>
-<center><font size=4.5 face="微软雅黑">花 开 堪 折 直 须 折，</font></center>
-<br/>
-<center><font size=4.5 face="微软雅黑">莫 待 无 花 空 折 枝。</font></center>
-
-
-
-
-<p><br/><br><br/><br><br/></p>
-<center><i class="fa fa-envelope"></i>  <font size=3 >qipccc7@gmail.com<font></center>
-
-<p><br/></p>
-<center><font size=2.5 color=#A9A9A9>Odyssey，取自《奥德赛》，史诗的征程就在脚下，珍惜年少把握机会，莫叹息自卑贪图享乐。<font></center>
-
-<head> 
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script> 
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/v4-shims.js"></script> 
-</head> 
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css">
-      </div>
-      
-      
-      
-    </div>
-    
-
-    
-    
-    
   </div>
 
 
           </div>
           
+    
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80NzM3My8yMzg3Mw=="></div>
+  </div>
+  
 
         </div>
           
@@ -299,6 +351,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker安装"><span class="nav-text">Docker安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dockerfile编写"><span class="nav-text">Dockerfile编写</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Daocloud-build并拉取"><span class="nav-text">Daocloud build并拉取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dokcer-compose编写"><span class="nav-text">dokcer-compose编写</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win10下借助Docker使用ROS"><span class="nav-text">Win10下借助Docker使用ROS</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -494,12 +547,25 @@
   NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
     MathJax.Hub.Typeset();
   }, window.MathJax);
-</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</script>
 
     
 
   
 
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 
 </body>
 </html>
